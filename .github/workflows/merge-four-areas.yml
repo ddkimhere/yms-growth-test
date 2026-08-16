@@ -1,0 +1,40 @@
+name: Merge analysis areas to four
+on:
+  push:
+    paths:
+      - '.github/workflows/merge-four-areas.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch index to four areas
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old="const AREAS=['중심 내용 파악','세부 정보 파악','어휘 이해','추론 능력','논리적 흐름','종합 독해'];"
+          new="const AREAS=['핵심 내용 파악','세부·어휘 이해','추론 능력','논리 구조 파악'];"
+          if old in s:
+              s=s.replace(old,new,1)
+          # Insert helpers after TYPES if not already present
+          anchor="const TYPES=['글의 목적','심경/분위기','주제','제목','내용 일치','내용 불일치','세부 내용/이유','어휘 의미','적절한 어휘','빈칸 추론','함축 의미/추론','무관한 문장','글의 순서','문장 삽입','요약/핵심 내용','주장/요지'];"
+          helper="""\nfunction areaForType(type){\n  if(['글의 목적','심경/분위기','주제','제목','요약/핵심 내용','주장/요지'].includes(type))return '핵심 내용 파악';\n  if(['내용 일치','내용 불일치','세부 내용/이유','어휘 의미','적절한 어휘'].includes(type))return '세부·어휘 이해';\n  if(['빈칸 추론','함축 의미/추론'].includes(type))return '추론 능력';\n  if(['무관한 문장','글의 순서','문장 삽입'].includes(type))return '논리 구조 파악';\n  return '핵심 내용 파악';\n}\nfunction normalizeArea(area,type){\n  if(AREAS.includes(area))return area;\n  return areaForType(type);\n}\n"""
+          if 'function areaForType(type)' not in s and anchor in s:
+              s=s.replace(anchor,anchor+helper,1)
+          import re
+          s=re.sub(r"function defaultArea\(i\)\{return AREAS\[Math\.min\(AREAS\.length-1,Math\.floor\(\(i-1\)/4\)\)\]\}","function defaultArea(i){return areaForType(defaultType(i))}",s, count=1)
+          s=s.replace("makeOptions(AREAS,saved.area||defaultArea(i))","makeOptions(AREAS,normalizeArea(saved.area,saved.type||defaultType(i)))")
+          # wording cleanup
+          s=s.replace('영역별 성취를 분석하고','4대 독해 영역을 분석하고')
+          p.write_text(s,encoding='utf-8')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Merge Growth Test analysis into four areas" || exit 0
+          git push
