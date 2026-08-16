@@ -1,0 +1,52 @@
+name: Fix AI evaluation persistence
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/fix-ai-evaluation-persistence.yml'
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch persistence and report
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+
+          # Persist generated/edited AI comment in Firestore report.
+          old="strengthMemo:$('strengthMemo').value,growthMemo:$('growthMemo').value,updatedBy:CURRENT_USER.uid"
+          new="strengthMemo:$('strengthMemo').value,growthMemo:$('growthMemo').value,aiComment:$('aiComment').value.trim(),updatedBy:CURRENT_USER.uid"
+          if old in s:
+              s=s.replace(old,new,1)
+
+          # Remove separate parent notice: level guidance is now part of AI Teacher Comment.
+          parent="<div class=\"block\"><div class=\"parent\"><h4>학부모님께 드리는 안내</h4><p>${parentComment(c)}</p></div></div>"
+          s=s.replace(parent,'')
+
+          # Reset should clear AI comment too.
+          old_reset="['name','school','teacher','strengthMemo','growthMemo'].forEach(id=>$(id).value='');"
+          new_reset="['name','school','teacher','strengthMemo','growthMemo','aiComment'].forEach(id=>$(id).value='');window.AI_COMMENT='';"
+          s=s.replace(old_reset,new_reset,1)
+
+          # If user edits the two supplemental teacher memos after generating AI, keep preview synced only when AI text is edited/generated.
+          # Add a visible AI label in report header for transparency.
+          s=s.replace("<h4>Teacher's Comment</h4><p>${teacherComment(c)}</p>","<h4>Teacher's Comment · AI Evaluation</h4><p>${teacherComment(c)}</p>",1)
+
+          p.write_text(s,encoding='utf-8')
+          assert "aiComment:$('aiComment').value.trim()" in s
+          assert '학부모님께 드리는 안내</h4>' not in s
+          print('AI comment persistence and unified report applied')
+          PY
+      - name: Commit and clean workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/fix-ai-evaluation-persistence.yml
+          git add index.html .github/workflows/fix-ai-evaluation-persistence.yml
+          git commit -m "Persist AI evaluation and unify parent comment" || exit 0
+          git push
