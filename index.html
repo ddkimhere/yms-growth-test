@@ -110,6 +110,27 @@ body.preview .editor{display:none}body.preview .stage{padding-top:30px}
 .user-chip{display:none;align-items:center;gap:7px;font-size:11.5px;color:var(--navy);font-weight:800;background:var(--soft);border:1px solid var(--line);padding:7px 10px;border-radius:999px}.user-chip.on{display:flex}
 .cloud-status{font-size:11px;font-weight:800;color:var(--green);white-space:nowrap}.cloud-status.err{color:var(--red)}
 @media print{.auth-overlay{display:none!important}.user-chip,.cloud-status,#logoutBtn{display:none!important}}
+
+/* Compact student-answer entry: 5 questions per row */
+.qtable-wrap{overflow:visible;border:0;background:transparent}
+.qtable{display:block;min-width:0;width:100%}
+.qtable thead{display:none}
+.qtable tbody{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;padding:0}
+.qtable tbody tr{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:"qno key" "ans ans" "res res";gap:6px 8px;align-items:center;border:1px solid #dfe6f1;border-radius:12px;background:#fff;padding:10px;min-width:0}
+.qtable tbody td{border:0!important;padding:0!important;min-width:0}
+.qtable tbody td:nth-child(1){grid-area:qno;text-align:left;font-size:14px}
+.qtable tbody td:nth-child(2){display:none!important}
+.qtable tbody td:nth-child(3){grid-area:key;text-align:right}
+.qtable tbody td:nth-child(4){grid-area:ans}
+.qtable tbody td:nth-child(5),.qtable tbody td:nth-child(6),.qtable tbody td:nth-child(7){display:none!important}
+.qtable tbody td:nth-child(8){grid-area:res;text-align:center;font-size:13px;min-height:20px}
+.qtable .qno:after{content:"번";font-weight:700;margin-left:1px}
+.qtable .fixed-answer{font-size:15px}
+.qtable .fixed-answer:before{content:"정답 ";font-size:10px;font-weight:700;color:var(--slate);margin-right:3px}
+.qtable .answer-input{height:42px;font-size:18px!important;text-align:center;border-radius:9px!important;padding:5px!important}
+@media(max-width:900px){.qtable tbody{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:560px){.qtable tbody{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 </style>
 </head>
 <body>
