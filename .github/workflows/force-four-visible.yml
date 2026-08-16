@@ -1,0 +1,34 @@
+name: Force four visible analysis areas
+on:
+  push:
+    paths:
+      - '.github/workflows/force-four-visible.yml'
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update visible report to four areas
+        shell: bash
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old="typeCards=Object.entries(c.byType).filter(([k,v])=>v.total).map(([k,v])=>{const p=Math.round(v.correct/v.total*100);return`<div class=\"type-card\"><div class=\"rowx\"><b>${esc(k)}</b><span>${v.correct}/${v.total} · ${p}%</span></div></div>`}).join('')"
+          new="typeCards=AREAS.map(k=>{const v=c.byArea[k]||{correct:0,total:0,earned:0,points:0};const p=v.points?Math.round(v.earned/v.points*100):0;return`<div class=\"type-card\"><div class=\"rowx\"><b>${esc(k)}</b><span>${v.correct}/${v.total} · ${p}%</span></div><div class=\"track\"><div class=\"fill\" style=\"width:${p}%\"></div></div></div>`}).join('')"
+          if old not in s:
+              raise SystemExit('old typeCards expression not found')
+          s=s.replace(old,new,1)
+          s=s.replace('문항 유형별 수행','4대 독해 영역별 성취도')
+          s=s.replace("typeCards||'<div class=\"type-card\">정답키를 입력하면 유형별 분석이 표시됩니다.</div>'","typeCards")
+          p.write_text(s,encoding='utf-8')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Show only four reading analysis areas"
+          git push
