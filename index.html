@@ -359,7 +359,7 @@ function applyAiCommentToReport(){
   const text=(window.AI_COMMENT||'').trim();
   if(!text)return;
   const p=document.querySelector('#card .comment p');
-  if(p)p.textContent=text;
+  if(p && p.textContent!==text)p.textContent=text;
 }
 function renderRecentTests(){
   const list=document.getElementById('recentTestsList');
