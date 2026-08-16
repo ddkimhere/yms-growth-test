@@ -11,10 +11,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
-      - name: Restore previous index and blank student answer placeholder
+          fetch-depth: 4
+      - name: Restore good index and blank student answer placeholder
         run: |
-          git show HEAD^:index.html > index.html
+          git show 0a8ae537a77935f7ec090143f60ec459ad8efd4f:index.html > index.html
           sed -i 's/ placeholder="1~5"//g' index.html
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
