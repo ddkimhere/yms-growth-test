@@ -1,0 +1,35 @@
+name: Use Gemini 3.5 Flash-Lite
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/use-gemini-35-flash-lite.yml']
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Switch model
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old='gemini-3.5-flash'
+          new='gemini-3.5-flash-lite'
+          if new not in s:
+              if old not in s:
+                  raise SystemExit('Current Gemini 3.5 Flash model string not found')
+              s=s.replace(old,new)
+              p.write_text(s,encoding='utf-8')
+          print('Gemini model:', new)
+          PY
+      - name: Commit and remove workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/use-gemini-35-flash-lite.yml
+          git add index.html
+          git commit -m "Use Gemini 3.5 Flash-Lite for AI evaluations"
+          git push
