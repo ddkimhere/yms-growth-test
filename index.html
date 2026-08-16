@@ -298,6 +298,7 @@ $('testCode').innerHTML=TESTS.map(x=>`<option>${x}</option>`).join('');$('date')
 
 <script type="module">
 import { initializeApp as initializeModularApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app-check.js";
 import { getAI, getGenerativeModel, GoogleAIBackend } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-ai.js";
 
 const AI_LEVEL_GUIDE={
@@ -326,6 +327,10 @@ async function getYmsAiModel(){
   if(!aiModelPromise){
     aiModelPromise=(async()=>{
       const app=initializeModularApp(firebaseConfig,'yms-ai-evaluation');
+      initializeAppCheck(app,{
+        provider:new ReCaptchaEnterpriseProvider('6Ldq4YgtAAAAALQVJCU0XqmKGBR-cedGh77SBCEC'),
+        isTokenAutoRefreshEnabled:true
+      });
       const ai=getAI(app,{backend:new GoogleAIBackend()});
       return getGenerativeModel(ai,{
         model:'gemini-3.5-flash-lite',
