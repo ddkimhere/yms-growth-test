@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YMS Growth Test 시험 파일 관리</title>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+<style>
+:root{--navy:#16264a;--blue:#2d6cdf;--soft:#eef3fb;--line:#d7e2f3;--green:#1d9e75;--red:#e24b4a;--slate:#6b7686}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Malgun Gothic",sans-serif;background:#eef1f6;color:#202837}.wrap{max-width:980px;margin:30px auto;padding:0 18px}.card{background:#fff;border:1px solid #e4e9f0;border-radius:18px;box-shadow:0 12px 36px rgba(20,40,80,.1);overflow:hidden}.head{background:linear-gradient(120deg,var(--navy),#27457f);color:#fff;padding:24px 28px}.head h1{margin:0;font-size:22px}.head p{margin:5px 0 0;color:#cdd9ef;font-size:13px}.body{padding:22px 28px}.top{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin-bottom:22px}.field{display:flex;flex-direction:column;gap:6px;min-width:150px;flex:1}.field label{font-size:12px;font-weight:700;color:var(--slate)}input,select{padding:10px 11px;border:1px solid var(--line);border-radius:9px;font:inherit;background:#fbfcfe}.btn{border:0;border-radius:10px;padding:10px 15px;font-weight:800;cursor:pointer}.primary{background:var(--navy);color:#fff}.green{background:var(--green);color:#fff}.ghost{background:var(--soft);color:var(--navy);border:1px solid var(--line)}.status{font-size:12px;font-weight:700;color:var(--slate);margin:10px 0}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.slot{border:1px solid #e1e7f0;border-radius:14px;padding:16px}.slot h3{font-size:14px;color:var(--navy);margin:0 0 10px}.slot .now{font-size:12px;color:var(--slate);min-height:38px;margin-bottom:10px}.slot a{display:inline-block;margin-top:8px;color:var(--blue);font-size:12px;font-weight:800}.login{position:fixed;inset:0;background:linear-gradient(135deg,#eef1f6,#dfe8f6);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}.login.hidden{display:none}.loginbox{width:min(410px,100%);background:#fff;border-radius:18px;padding:26px;box-shadow:0 20px 60px rgba(22,38,74,.18)}.loginbox h2{margin:0 0 5px;color:var(--navy)}.loginbox p{margin:0 0 15px;color:var(--slate);font-size:12px}.loginbox .field{margin-top:10px}.err{color:var(--red);font-size:12px;font-weight:700;min-height:18px;margin-top:8px}.foot{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:20px;padding-top:16px;border-top:1px solid #e5e9ef;font-size:12px;color:var(--slate)}@media(max-width:700px){.grid{grid-template-columns:1fr}.body{padding:18px}.head{padding:20px}}
+</style>
+</head>
+<body>
+<div class="login" id="login"><div class="loginbox"><h2>YMS Growth Test</h2><p>시험 파일 관리 · Firebase 로그인</p><div class="field"><label>이메일</label><input id="email" type="email"></div><div class="field"><label>비밀번호</label><input id="password" type="password"></div><button class="btn primary" id="loginBtn" style="width:100%;margin-top:14px">로그인</button><div class="err" id="loginErr"></div></div></div>
+<div class="wrap"><div class="card"><div class="head"><h1>시험 파일 관리</h1><p>학생용 시험지 · 정답지 · 해석지를 시험코드별로 중앙 저장합니다.</p></div><div class="body">
+<div class="top"><div class="field"><label>시험코드</label><select id="testCode"></select></div><button class="btn ghost" id="reloadBtn">파일 상태 새로고침</button></div>
+<div class="grid">
+<div class="slot"><h3>학생용 시험지</h3><div class="now" id="studentNow">미등록</div><input id="studentFile" type="file" accept="application/pdf"><a id="studentOpen" target="_blank" rel="noopener" style="display:none">현재 파일 열기</a></div>
+<div class="slot"><h3>정답지</h3><div class="now" id="answerNow">미등록</div><input id="answerFile" type="file" accept="application/pdf"><a id="answerOpen" target="_blank" rel="noopener" style="display:none">현재 파일 열기</a></div>
+<div class="slot"><h3>해석지</h3><div class="now" id="translationNow">미등록</div><input id="translationFile" type="file" accept="application/pdf"><a id="translationOpen" target="_blank" rel="noopener" style="display:none">현재 파일 열기</a></div>
+</div>
+<div class="status" id="status">로그인 후 시험코드를 선택하세요.</div><button class="btn green" id="uploadBtn">선택한 PDF 업로드 / 교체</button>
+<div class="foot"><span id="userText"></span><div><a href="./" style="color:var(--navy);font-weight:800;text-decoration:none;margin-right:10px">분석 보고서로 돌아가기</a><button class="btn ghost" id="logoutBtn">로그아웃</button></div></div>
+</div></div></div>
+<script>
+const firebaseConfig={apiKey:"AIzaSyBHFzS1vB0PN0kkt8gzTaXPJnvZQAP1qts",authDomain:"yms-growth-test.firebaseapp.com",projectId:"yms-growth-test",storageBucket:"yms-growth-test.firebasestorage.app",messagingSenderId:"1036597002427",appId:"1:1036597002427:web:716e182ab1173ba3b6699e",measurementId:"G-NGS2N0KE1Z"};
+firebase.initializeApp(firebaseConfig);const auth=firebase.auth(),db=firebase.firestore(),storage=firebase.storage();
+const TESTS=["M1-1","M1-2","M1-3","M1-4","M1-5","M1-6","M2-1","M2-2","M2-3","M2-4","M2-5","M2-6","M3-2","M3-3","M3-4","M3-5","M3-6","H1-1"];
+const $=id=>document.getElementById(id);$('testCode').innerHTML=TESTS.map(x=>`<option>${x}</option>`).join('');
+function esc(s){return String(s||'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]))}
+async function getFiles(){const code=$('testCode').value,s=await db.collection('tests').doc(code).get();return s.exists?(s.data().files||{}):{}}
+function showOne(key,f){$(key+'Now').innerHTML=f?.name?`등록됨: <b>${esc(f.name)}</b>`:'미등록';const a=$(key+'Open');if(f?.url){a.href=f.url;a.style.display='inline-block'}else{a.removeAttribute('href');a.style.display='none'}}
+async function refresh(){try{$('status').textContent='파일 상태 확인 중…';const f=await getFiles();showOne('student',f.student);showOne('answer',f.answer);showOne('translation',f.translation);$('status').textContent=`${$('testCode').value} 파일 상태를 불러왔습니다.`}catch(e){$('status').textContent='불러오기 실패: '+e.message}}
+async function uploadOne(code,key,file){if(!file)return null;if(file.type!=='application/pdf'&&!file.name.toLowerCase().endsWith('.pdf'))throw new Error('PDF 파일만 업로드할 수 있습니다.');const safe=file.name.replace(/[^\w.\-가-힣]/g,'_'),path=`tests/${code}/${key}_${Date.now()}_${safe}`,ref=storage.ref().child(path),snap=await ref.put(file,{contentType:'application/pdf'}),url=await snap.ref.getDownloadURL();return{url,path,name:file.name,updatedAt:new Date().toISOString()}}
+$('uploadBtn').onclick=async()=>{const code=$('testCode').value,selected={student:$('studentFile').files[0],answer:$('answerFile').files[0],translation:$('translationFile').files[0]};if(!selected.student&&!selected.answer&&!selected.translation){alert('업로드할 PDF를 선택해 주세요.');return}try{$('status').textContent='업로드 중…';const old=await getFiles(),next={...old};for(const [k,file] of Object.entries(selected))if(file)next[k]=await uploadOne(code,k,file);await db.collection('tests').doc(code).set({testCode:code,files:next,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:auth.currentUser.uid},{merge:true});['studentFile','answerFile','translationFile'].forEach(id=>$(id).value='');$('status').textContent='업로드 완료';await refresh()}catch(e){console.error(e);$('status').textContent='업로드 실패: '+e.message}};
+$('testCode').onchange=refresh;$('reloadBtn').onclick=refresh;$('logoutBtn').onclick=()=>auth.signOut();$('loginBtn').onclick=async()=>{try{$('loginErr').textContent='';await auth.signInWithEmailAndPassword($('email').value.trim(),$('password').value)}catch(e){$('loginErr').textContent='로그인 정보를 확인해 주세요.'}};$('password').onkeydown=e=>{if(e.key==='Enter')$('loginBtn').click()};
+auth.onAuthStateChanged(async u=>{if(u){$('login').classList.add('hidden');$('userText').textContent=u.email||'로그인됨';await refresh()}else{$('login').classList.remove('hidden');$('userText').textContent=''}});
+</script></body></html>
