@@ -10,48 +10,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Convert question table to 5-column compact grid
+      - name: Convert question table to compact grid
         shell: bash
         run: |
-          python3 <<'PY'
-          from pathlib import Path
-          p=Path('index.html')
-          s=p.read_text(encoding='utf-8')
-          css=r'''
-/* Compact student-answer entry: 5 questions per row */
-.qtable-wrap{overflow:visible;border:0;background:transparent}
-.qtable{display:block;min-width:0;width:100%}
-.qtable thead{display:none}
-.qtable tbody{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;padding:0}
-.qtable tbody tr{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:"qno key" "ans ans" "res res";gap:6px 8px;align-items:center;border:1px solid #dfe6f1;border-radius:12px;background:#fff;padding:10px;min-width:0}
-.qtable tbody td{border:0!important;padding:0!important;min-width:0}
-.qtable tbody td:nth-child(1){grid-area:qno;text-align:left;font-size:14px}
-.qtable tbody td:nth-child(2){display:none!important}
-.qtable tbody td:nth-child(3){grid-area:key;text-align:right}
-.qtable tbody td:nth-child(4){grid-area:ans}
-.qtable tbody td:nth-child(5),.qtable tbody td:nth-child(6),.qtable tbody td:nth-child(7){display:none!important}
-.qtable tbody td:nth-child(8){grid-area:res;text-align:center;font-size:13px;min-height:20px}
-.qtable .qno:after{content:'번';font-weight:700;margin-left:1px}
-.qtable .fixed-answer{font-size:15px}
-.qtable .fixed-answer:before{content:'정답 ';font-size:10px;font-weight:700;color:var(--slate);margin-right:3px}
-.qtable .answer-input{height:42px;font-size:18px!important;text-align:center;border-radius:9px!important;padding:5px!important}
-@media(max-width:900px){.qtable tbody{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:560px){.qtable tbody{grid-template-columns:repeat(2,minmax(0,1fr))}}
-'''
-          marker='</style>'
-          if '/* Compact student-answer entry: 5 questions per row */' not in s:
-              s=s.replace(marker,css+'\n'+marker,1)
-              p.write_text(s,encoding='utf-8')
-          PY
+          python3 -c "from pathlib import Path; p=Path('index.html'); s=p.read_text(encoding='utf-8'); css='\n/* Compact student-answer entry: 5 questions per row */\n.qtable-wrap{overflow:visible;border:0;background:transparent}\n.qtable{display:block;min-width:0;width:100%}\n.qtable thead{display:none}\n.qtable tbody{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;padding:0}\n.qtable tbody tr{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:\"qno key\" \"ans ans\" \"res res\";gap:6px 8px;align-items:center;border:1px solid #dfe6f1;border-radius:12px;background:#fff;padding:10px;min-width:0}\n.qtable tbody td{border:0!important;padding:0!important;min-width:0}\n.qtable tbody td:nth-child(1){grid-area:qno;text-align:left;font-size:14px}\n.qtable tbody td:nth-child(2){display:none!important}\n.qtable tbody td:nth-child(3){grid-area:key;text-align:right}\n.qtable tbody td:nth-child(4){grid-area:ans}\n.qtable tbody td:nth-child(5),.qtable tbody td:nth-child(6),.qtable tbody td:nth-child(7){display:none!important}\n.qtable tbody td:nth-child(8){grid-area:res;text-align:center;font-size:13px;min-height:20px}\n.qtable .qno:after{content:\"번\";font-weight:700;margin-left:1px}\n.qtable .fixed-answer{font-size:15px}\n.qtable .fixed-answer:before{content:\"정답 \";font-size:10px;font-weight:700;color:var(--slate);margin-right:3px}\n.qtable .answer-input{height:42px;font-size:18px!important;text-align:center;border-radius:9px!important;padding:5px!important}\n@media(max-width:900px){.qtable tbody{grid-template-columns:repeat(3,minmax(0,1fr))}}\n@media(max-width:560px){.qtable tbody{grid-template-columns:repeat(2,minmax(0,1fr))}}\n'; s=s if '/* Compact student-answer entry: 5 questions per row */' in s else s.replace('</style>',css+'\n</style>',1); p.write_text(s,encoding='utf-8')"
       - name: Commit change
         shell: bash
         run: |
           if git diff --quiet -- index.html; then
-            echo 'No change needed'
+            echo "No change needed"
             exit 0
           fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m 'Show five question answer inputs per row'
+          git commit -m "Show five question answer inputs per row"
           git push
