@@ -1,0 +1,159 @@
+name: Fix AI evaluation button module
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-ai-button-module.yml'
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix AI module script
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          start=s.find('\\n<script type="module">\\n')
+          if start < 0:
+              raise SystemExit('broken module start not found')
+          end=s.find('</script>\\n\n</body>', start)
+          if end < 0:
+              end=s.find('</script>\\n</body>', start)
+          if end < 0:
+              raise SystemExit('broken module end not found')
+          end += len('</script>\\n')
+          module='''
+<script type="module">
+import { initializeApp as initializeModularApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import { getAI, getGenerativeModel, GoogleAIBackend } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-ai.js";
+
+const AI_LEVEL_GUIDE={
+  'M1-1':'중1 입문 독해 수준으로, 짧고 명확한 생활·학교 소재를 중심으로 핵심 내용과 직접 제시된 정보를 찾는 기본 독해 능력을 평가합니다.',
+  'M1-2':'중1 기본 독해 수준으로, 일상적 어휘와 비교적 단순한 문장 구조를 바탕으로 주제·제목·내용 일치·기초 추론을 평가합니다.',
+  'M1-3':'중1 표준 독해 수준으로, 기본 정보 파악에서 이유 추론·문맥 어휘·빈칸으로 평가 범위가 넓어지는 단계입니다.',
+  'M1-4':'중1 심화~중2 진입 수준으로, 정보량이 늘고 원인·결과 및 문맥 판단이 강화되어 단순 직독직해 이상의 이해가 필요합니다.',
+  'M1-5':'중2 표준 독해 수준으로, 중심 생각을 압축하고 상황의 의미를 추론하며 다의어의 문맥적 의미를 판단하는 능력을 평가합니다.',
+  'M1-6':'중2 심화~중3 진입 수준으로, 추상성이 높아지고 단순 정보보다 글의 논리와 근거를 파악하는 능력을 평가합니다.',
+  'M2-1':'중3 표준~심화 독해 수준으로, 문화·공정성·역사 등 추상적 소재에서 개념 간 관계와 필자의 관점을 읽는 능력을 평가합니다.',
+  'M2-2':'중3 심화 독해 수준으로, 철학·문화·사회 문제를 다루며 개념의 차이와 논리적 함의를 구별하는 능력을 평가합니다.',
+  'M2-3':'중3 최상~고1 예비 수준으로, 추상 주제가 증가하고 지문에 직접 쓰이지 않은 의미까지 종합하는 능력을 평가합니다.',
+  'M2-4':'고1 예비 독해 수준으로, 근거와 결론·공정성·자료의 선택성 등 고등 독해형 논증 구조를 본격적으로 평가합니다.',
+  'M2-5':'고1 3월 모의고사 직전 수준으로, 추상적 개념·복합 인과관계·학술적 어휘를 통해 고등학교 모의고사형 사고를 평가합니다.',
+  'M2-6':'고1 3월 모의고사 진입 수준으로, 고1 3월 전국연합에 진입하는 어휘·문장 구조·추론 능력을 평가합니다.',
+  'M3-2':'고1 3월 전국연합 수준+응용 단계로, 고1 3월 모의고사 수준에 응용·추론 요소를 강화한 평가입니다.',
+  'M3-3':'고1 6월 전국연합 수준으로, 추상적 소재와 복합 논리가 본격화된 고등 독해 능력을 평가합니다.',
+  'M3-4':'고1 6월 전국연합 중상 난도로, 변인·인과관계·논증 구조와 순서·삽입 등 논리적 독해 부담이 강화된 평가입니다.',
+  'M3-5':'고1 6월 전국연합 실전 상 난도로, 지문 길이와 추상성이 높고 논리 추론과 문맥 판단에서 높은 정확성을 요구합니다.',
+  'M3-6':'고1 6월 전국연합 종합 실전 최상 난도로, 복합 추론·논리 구조·고급 어휘를 종합적으로 평가합니다.',
+  'H1-1':'고2 전국연합 수준으로, 높은 수준의 어휘와 추상적 소재, 복합 문장 및 논증 관계를 종합적으로 처리하는 능력을 평가합니다.'
+};
+
+let aiModelPromise=null;
+async function getYmsAiModel(){
+  if(!aiModelPromise){
+    aiModelPromise=(async()=>{
+      const app=initializeModularApp(firebaseConfig,'yms-ai-evaluation');
+      const ai=getAI(app,{backend:new GoogleAIBackend()});
+      return getGenerativeModel(ai,{
+        model:'gemini-3.5-flash-lite',
+        systemInstruction:`당신은 YMS Growth Test의 영어 교육 평가서를 작성하는 전문 교사입니다. 학부모에게 전달할 담당교사 Comment를 한국어로 작성하세요. 제공된 데이터에 없는 사실은 절대 만들지 마세요. 점수와 영역별 성취도를 정확히 반영하고, 학생을 단정적으로 낙인찍지 마세요. 반드시 1) 이번 시험의 객관적인 난이도 설명, 2) 현재 성취와 강점, 3) 보완이 필요한 영역과 근거, 4) 다음 학습 방향을 자연스럽게 하나의 코멘트로 연결하세요. 과장된 칭찬이나 불필요한 수식은 피하고, 학부모가 이해하기 쉬운 전문적인 문체를 사용하세요. 5~7문장, 약 350~550자 내외로 작성하고 제목·불릿·마크다운 없이 본문만 출력하세요.`
+      });
+    })();
+  }
+  return aiModelPromise;
+}
+
+function currentAiData(){
+  const c=calc();
+  const code=$('testCode').value;
+  const rows=c.rows||[];
+  const wrong=rows.filter(r=>r.ans&&r.key&&r.ans!==r.key).map(r=>({문항:r.n,영역:r.area,유형:r.type}));
+  const area=AREAS.map(a=>({영역:a,정답:c.byArea[a]?.correct||0,문항:c.byArea[a]?.total||0,성취도:c.areaPct[a]||0}));
+  const name=$('name').value.trim();
+  const history=(REPORTS_CACHE||[]).filter(r=>r.name===name&&r.testCode!==code).slice(-3).map(r=>({시험:r.testCode,점수:r.score,평가일:r.date}));
+  return {
+    학생명:name||'학생', 학교:$('school').value.trim(), 학년:$('grade').value, 시험코드:code,
+    시험수준:AI_LEVEL_GUIDE[code]||'해당 회차 기준 난이도', 점수:c.score, 정답수:c.correct, 전체문항:c.totalQuestions, 응답문항:c.answered,
+    영역별성취도:area, 오답정보:wrong, 이전평가:history,
+    선생님강점메모:$('strengthMemo').value.trim(), 선생님보완메모:$('growthMemo').value.trim()
+  };
+}
+
+function applyAiCommentToReport(){
+  const text=(window.AI_COMMENT||'').trim();
+  if(!text)return;
+  const p=document.querySelector('#card .comment p');
+  if(p)p.textContent=text;
+}
+
+const card=document.getElementById('card');
+if(card)new MutationObserver(()=>applyAiCommentToReport()).observe(card,{childList:true,subtree:true});
+
+const btn=document.getElementById('generateAiComment');
+if(btn){
+  btn.addEventListener('click',async()=>{
+    const status=document.getElementById('aiStatus');
+    const out=document.getElementById('aiComment');
+    const data=currentAiData();
+    if(!data.학생명||data.학생명==='학생'){
+      status.textContent='학생명을 먼저 입력해 주세요.';
+      status.className='hint ai-status-error';
+      return;
+    }
+    if(data.응답문항===0){
+      status.textContent='학생 답을 먼저 입력해 주세요.';
+      status.className='hint ai-status-error';
+      return;
+    }
+    btn.disabled=true;
+    btn.textContent='AI 평가서 작성 중…';
+    status.textContent='시험 결과와 4대 독해 영역을 분석하고 있습니다.';
+    status.className='hint';
+    try{
+      const model=await getYmsAiModel();
+      const prompt=`다음 YMS Growth Test 결과만을 근거로 담당교사 Comment를 작성하세요.
+
+${JSON.stringify(data,null,2)}
+
+오답 문항이 아직 미응답인 경우에는 오답으로 해석하지 마세요. 이전 평가가 있으면 변화 추이를 과장 없이 한 문장 이내에서 언급할 수 있습니다. 시험 수준 설명은 제공된 문구의 의미를 바꾸지 마세요.`;
+      const result=await model.generateContent(prompt);
+      const text=(result.response.text()||'').trim();
+      if(!text)throw new Error('AI 응답이 비어 있습니다.');
+      window.AI_COMMENT=text;
+      out.value=text;
+      applyAiCommentToReport();
+      status.textContent='AI 평가서 생성 완료 · 필요한 경우 문장을 직접 수정할 수 있습니다.';
+      status.className='hint ai-status-ok';
+    }catch(e){
+      console.error(e);
+      const msg=String(e?.message||e);
+      status.textContent='AI 평가서 생성 실패: '+msg;
+      status.className='hint ai-status-error';
+    }finally{
+      btn.disabled=false;
+      btn.textContent='✨ AI 평가서 다시 만들기';
+    }
+  });
+}
+
+const aiTextarea=document.getElementById('aiComment');
+if(aiTextarea)aiTextarea.addEventListener('input',()=>{
+  window.AI_COMMENT=aiTextarea.value;
+  applyAiCommentToReport();
+});
+</script>
+'''
+          s=s[:start]+module+s[end:]
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit and remove workflow
+        run: |
+          rm .github/workflows/fix-ai-button-module.yml
+          git config user.name "ddkimhere"
+          git config user.email "ddkim1984@gmail.com"
+          git add index.html .github/workflows/fix-ai-button-module.yml
+          git commit -m "Fix AI evaluation button module script"
+          git push
