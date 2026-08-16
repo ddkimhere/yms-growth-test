@@ -1,0 +1,54 @@
+name: Add AI evaluation
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/add-ai-evaluation.yml'
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch AI evaluation into report
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+
+          old='''  <div class="panel"><h2>교사 코멘트 보정</h2><div class="grid" style="grid-template-columns:1fr 1fr">\n    <div class="field"><label>강점 추가 메모</label><textarea id="strengthMemo"></textarea></div>\n    <div class="field"><label>보완점 추가 메모</label><textarea id="growthMemo"></textarea></div>\n  </div></div>'''
+          new='''  <div class="panel ai-eval-panel"><h2>AI 담당교사 평가서</h2>\n    <div class="ai-eval-top">\n      <button class="btn btn-save" id="generateAiComment" type="button">✨ AI 평가서 만들기</button>\n      <span class="hint" id="aiStatus">시험 결과를 입력한 뒤 AI 평가서를 생성하세요.</span>\n    </div>\n    <div class="field" style="margin-top:12px"><label>담당교사 Comment · AI 초안 (수정 가능)</label><textarea id="aiComment" class="ai-comment-input" placeholder="AI 평가서가 여기에 생성됩니다."></textarea></div>\n    <details class="teacher-memo-details"><summary>선생님 추가 메모</summary><div class="grid" style="grid-template-columns:1fr 1fr;margin-top:10px">\n      <div class="field"><label>강점 추가 메모</label><textarea id="strengthMemo"></textarea></div>\n      <div class="field"><label>보완점 추가 메모</label><textarea id="growthMemo"></textarea></div>\n    </div></details>\n  </div>'''
+          if old in s:
+              s=s.replace(old,new,1)
+          elif 'id="generateAiComment"' not in s:
+              raise SystemExit('teacher comment panel pattern not found')
+
+          css='''\n.ai-eval-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.ai-comment-input{min-height:150px!important;font-size:14px!important;line-height:1.75!important;background:#fff!important}.teacher-memo-details{margin-top:12px;border-top:1px solid #e8edf4;padding-top:10px}.teacher-memo-details summary{cursor:pointer;color:var(--slate);font-size:12px;font-weight:800}.ai-status-error{color:var(--red)!important}.ai-status-ok{color:var(--green)!important}\n'''
+          if '.ai-eval-top{' not in s:
+              s=s.replace('</style>',css+'\n</style>',1)
+
+          if "let AI_COMMENT=''" not in s:
+              s=s.replace('let CURRENT_USER=null;','let CURRENT_USER=null;\nlet AI_COMMENT=\'\';',1)
+
+          module=r'''\n<script type="module">\nimport { initializeApp as initializeModularApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";\nimport { getAI, getGenerativeModel, GoogleAIBackend } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-ai.js";\n\nconst AI_LEVEL_GUIDE={\n  'M1-1':'중1 입문 독해 수준으로, 짧고 명확한 생활·학교 소재를 중심으로 핵심 내용과 직접 제시된 정보를 찾는 기본 독해 능력을 평가합니다.',\n  'M1-2':'중1 기본 독해 수준으로, 일상적 어휘와 비교적 단순한 문장 구조를 바탕으로 주제·제목·내용 일치·기초 추론을 평가합니다.',\n  'M1-3':'중1 표준 독해 수준으로, 기본 정보 파악에서 이유 추론·문맥 어휘·빈칸으로 평가 범위가 넓어지는 단계입니다.',\n  'M1-4':'중1 심화~중2 진입 수준으로, 정보량이 늘고 원인·결과 및 문맥 판단이 강화되어 단순 직독직해 이상의 이해가 필요합니다.',\n  'M1-5':'중2 표준 독해 수준으로, 중심 생각을 압축하고 상황의 의미를 추론하며 다의어의 문맥적 의미를 판단하는 능력을 평가합니다.',\n  'M1-6':'중2 심화~중3 진입 수준으로, 추상성이 높아지고 단순 정보보다 글의 논리와 근거를 파악하는 능력을 평가합니다.',\n  'M2-1':'중3 표준~심화 독해 수준으로, 문화·공정성·역사 등 추상적 소재에서 개념 간 관계와 필자의 관점을 읽는 능력을 평가합니다.',\n  'M2-2':'중3 심화 독해 수준으로, 철학·문화·사회 문제를 다루며 개념의 차이와 논리적 함의를 구별하는 능력을 평가합니다.',\n  'M2-3':'중3 최상~고1 예비 수준으로, 추상 주제가 증가하고 지문에 직접 쓰이지 않은 의미까지 종합하는 능력을 평가합니다.',\n  'M2-4':'고1 예비 독해 수준으로, 근거와 결론·공정성·자료의 선택성 등 고등 독해형 논증 구조를 본격적으로 평가합니다.',\n  'M2-5':'고1 3월 모의고사 직전 수준으로, 추상적 개념·복합 인과관계·학술적 어휘를 통해 고등학교 모의고사형 사고를 평가합니다.',\n  'M2-6':'고1 3월 모의고사 진입 수준으로, 고1 3월 전국연합에 진입하는 어휘·문장 구조·추론 능력을 평가합니다.',\n  'M3-2':'고1 3월 전국연합 수준+응용 단계로, 고1 3월 모의고사 수준에 응용·추론 요소를 강화한 평가입니다.',\n  'M3-3':'고1 6월 전국연합 수준으로, 추상적 소재와 복합 논리가 본격화된 고등 독해 능력을 평가합니다.',\n  'M3-4':'고1 6월 전국연합 중상 난도로, 변인·인과관계·논증 구조와 순서·삽입 등 논리적 독해 부담이 강화된 평가입니다.',\n  'M3-5':'고1 6월 전국연합 실전 상 난도로, 지문 길이와 추상성이 높고 논리 추론과 문맥 판단에서 높은 정확성을 요구합니다.',\n  'M3-6':'고1 6월 전국연합 종합 실전 최상 난도로, 복합 추론·논리 구조·고급 어휘를 종합적으로 평가합니다.',\n  'H1-1':'고2 전국연합 수준으로, 높은 수준의 어휘와 추상적 소재, 복합 문장 및 논증 관계를 종합적으로 처리하는 능력을 평가합니다.'\n};\n\nlet aiModelPromise=null;\nasync function getYmsAiModel(){\n  if(!aiModelPromise){\n    aiModelPromise=(async()=>{\n      const app=initializeModularApp(firebaseConfig,'yms-ai-evaluation');\n      const ai=getAI(app,{backend:new GoogleAIBackend()});\n      return getGenerativeModel(ai,{\n        model:'gemini-3.5-flash',\n        systemInstruction:`당신은 YMS Growth Test의 영어 교육 평가서를 작성하는 전문 교사입니다. 학부모에게 전달할 담당교사 Comment를 한국어로 작성하세요. 제공된 데이터에 없는 사실은 절대 만들지 마세요. 점수와 영역별 성취도를 정확히 반영하고, 학생을 단정적으로 낙인찍지 마세요. 반드시 1) 이번 시험의 객관적인 난이도 설명, 2) 현재 성취와 강점, 3) 보완이 필요한 영역과 근거, 4) 다음 학습 방향을 자연스럽게 하나의 코멘트로 연결하세요. 과장된 칭찬이나 불필요한 수식은 피하고, 학부모가 이해하기 쉬운 전문적인 문체를 사용하세요. 5~7문장, 약 350~550자 내외로 작성하고 제목·불릿·마크다운 없이 본문만 출력하세요.`\n      });\n    })();\n  }\n  return aiModelPromise;\n}\n\nfunction currentAiData(){\n  const c=calc();\n  const code=$('testCode').value;\n  const rows=c.rows||[];\n  const wrong=rows.filter(r=>r.ans&&r.key&&r.ans!==r.key).map(r=>({문항:r.n,영역:r.area,유형:r.type}));\n  const area=AREAS.map(a=>({영역:a,정답:c.byArea[a]?.correct||0,문항:c.byArea[a]?.total||0,성취도:c.areaPct[a]||0}));\n  const name=$('name').value.trim();\n  const history=(REPORTS_CACHE||[]).filter(r=>r.name===name&&r.testCode!==code).slice(-3).map(r=>({시험:r.testCode,점수:r.score,평가일:r.date}));\n  return {\n    학생명:name||'학생', 학교:$('school').value.trim(), 학년:$('grade').value, 시험코드:code,\n    시험수준:AI_LEVEL_GUIDE[code]||'해당 회차 기준 난이도', 점수:c.score, 정답수:c.correct, 전체문항:c.totalQuestions, 응답문항:c.answered,\n    영역별성취도:area, 오답정보:wrong, 이전평가:history,\n    선생님강점메모:$('strengthMemo').value.trim(), 선생님보완메모:$('growthMemo').value.trim()\n  };\n}\n\nfunction applyAiCommentToReport(){\n  const text=(window.AI_COMMENT||'').trim();\n  if(!text)return;\n  const boxes=[...document.querySelectorAll('#card .comment')];\n  const box=boxes.find(x=>(x.querySelector('h4')?.textContent||'').includes('담당교사'))||boxes[boxes.length-1];\n  if(box){\n    const p=box.querySelector('p');\n    if(p)p.textContent=text;\n  }\n}\n\nconst card=document.getElementById('card');\nif(card)new MutationObserver(()=>applyAiCommentToReport()).observe(card,{childList:true,subtree:true});\n\nconst btn=document.getElementById('generateAiComment');\nif(btn)btn.addEventListener('click',async()=>{\n  const status=document.getElementById('aiStatus');\n  const out=document.getElementById('aiComment');\n  const data=currentAiData();\n  if(!data.학생명||data.학생명==='학생'){status.textContent='학생명을 먼저 입력해 주세요.';status.className='hint ai-status-error';return;}\n  if(data.응답문항===0){status.textContent='학생 답을 먼저 입력해 주세요.';status.className='hint ai-status-error';return;}\n  btn.disabled=true; btn.textContent='AI 평가서 작성 중…'; status.textContent='시험 결과와 4대 독해 영역을 분석하고 있습니다.'; status.className='hint';\n  try{\n    const model=await getYmsAiModel();\n    const prompt=`다음 YMS Growth Test 결과만을 근거로 담당교사 Comment를 작성하세요.\\n\\n${JSON.stringify(data,null,2)}\\n\\n오답 문항이 아직 미응답인 경우에는 오답으로 해석하지 마세요. 이전 평가가 있으면 변화 추이를 과장 없이 한 문장 이내에서 언급할 수 있습니다. 시험 수준 설명은 제공된 문구의 의미를 바꾸지 마세요.`;\n    const result=await model.generateContent(prompt);\n    const text=(result.response.text()||'').trim();\n    if(!text)throw new Error('AI 응답이 비어 있습니다.');\n    window.AI_COMMENT=text;\n    out.value=text;\n    applyAiCommentToReport();\n    status.textContent='AI 평가서 생성 완료 · 필요한 경우 문장을 직접 수정할 수 있습니다.';status.className='hint ai-status-ok';\n  }catch(e){\n    console.error(e);\n    const msg=String(e?.message||e);\n    status.textContent=msg.includes('App Check')?'Firebase AI Logic의 App Check 설정이 필요합니다.':'AI 평가서 생성 실패: '+msg;\n    status.className='hint ai-status-error';\n  }finally{btn.disabled=false;btn.textContent='✨ AI 평가서 다시 만들기';}\n});\n\nconst aiTextarea=document.getElementById('aiComment');\nif(aiTextarea)aiTextarea.addEventListener('input',()=>{window.AI_COMMENT=aiTextarea.value;applyAiCommentToReport();});\n</script>\n'''
+          if 'id="generateAiComment"' in s and 'getYmsAiModel' not in s:
+              s=s.replace('</body>',module+'\n</body>',1)
+
+          # Load/save AI draft when matching patterns are present.
+          s=s.replace("growthMemo:$('growthMemo').value.trim()", "growthMemo:$('growthMemo').value.trim(),aiComment:$('aiComment').value.trim()")
+          s=s.replace("$('growthMemo').value=r.growthMemo||''", "$('growthMemo').value=r.growthMemo||'';$('aiComment').value=r.aiComment||'';window.AI_COMMENT=r.aiComment||''")
+
+          p.write_text(s,encoding='utf-8')
+          print('AI evaluation UI:', 'generateAiComment' in s)
+          print('AI Logic integration:', 'getYmsAiModel' in s)
+          PY
+      - name: Commit changes and remove one-time workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/add-ai-evaluation.yml
+          git add index.html .github/workflows/add-ai-evaluation.yml
+          git commit -m "Add Firebase AI Logic evaluation comments" || exit 0
+          git push
