@@ -2,7 +2,8 @@ name: Remove area achievement block
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -14,27 +15,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Remove area achievement block
-        shell: python
+        shell: bash
         run: |
+          python3 <<'PY'
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          old = '''      <div class="block"><div class="block-title"><span class="bar"></span>영역별 성취도</div><div class="bars">
-        ${AREAS.map(a=>`<div class="barrow"><div class="nm">${a}</div><div class="track"><div class="fill" style="width:${c.areaPct[a]}%"></div></div><div class="pt">${c.areaPct[a]}%</div></div>`).join('')}
-      </div></div>
-'''
-          if old in s:
-              s = s.replace(old, '', 1)
-          else:
-              start = s.find('<div class="block"><div class="block-title"><span class="bar"></span>영역별 성취도</div>')
-              if start >= 0:
-                  nxt = s.find('<div class="block"><div class="block-title"><span class="bar"></span>4대 독해 유형별 성취도</div>', start)
-                  if nxt < 0:
-                      nxt = s.find('<div class="block"><div class="block-title"><span class="bar"></span>문항 유형별 수행</div>', start)
-                  if nxt >= 0:
-                      s = s[:start] + s[nxt:]
-          p.write_text(s, encoding='utf-8')
+          start = s.find('<div class="block"><div class="block-title"><span class="bar"></span>영역별 성취도</div>')
+          if start >= 0:
+              nxt = s.find('<div class="block"><div class="block-title"><span class="bar"></span>4대 독해 유형별 성취도</div>', start)
+              if nxt < 0:
+                  nxt = s.find('<div class="block"><div class="block-title"><span class="bar"></span>문항 유형별 수행</div>', start)
+              if nxt >= 0:
+                  s = s[:start] + s[nxt:]
+                  p.write_text(s, encoding='utf-8')
+          PY
       - name: Commit change
+        shell: bash
         run: |
           if git diff --quiet -- index.html; then
             echo "No change needed"
