@@ -2,7 +2,7 @@ name: Add recent tests to AI panel
 'on':
   push:
     paths:
-      - '.github/scripts/patch_recent_tests.py'
+      - '.github/workflows/add-recent-tests-ai-panel.yml'
 permissions:
   contents: write
 jobs:
