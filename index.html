@@ -9,439 +9,78 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <style>
-:root{
-  --navy:#16264a;--navy2:#22386b;--blue:#2d6cdf;--soft:#eef3fb;--line:#d7e2f3;
-  --ink:#202837;--slate:#6b7686;--paper:#fff;--bg:#eef1f6;--green:#1d9e75;
-  --amber:#ef9f27;--red:#e24b4a;--gold:#bd9a45;--shadow:0 12px 36px rgba(20,40,80,.12);
-  --font:"Pretendard","Pretendard Variable",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif
-}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.6}
-button,input,select,textarea{font-family:inherit}
-.toolbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.93);backdrop-filter:blur(10px);border-bottom:1px solid #e4e9f0}
-.toolbar-inner{max-width:1180px;margin:auto;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:9px;font-weight:900;color:var(--navy)}
-.brand .dot{width:28px;height:28px;border-radius:8px;background:var(--navy);color:#fff;display:grid;place-items:center}
-.seg{display:inline-flex;background:#eaeef5;border-radius:10px;padding:3px}
-.seg button{border:0;background:transparent;color:var(--slate);font-weight:700;font-size:13px;padding:7px 13px;border-radius:8px;cursor:pointer}
-.seg button.on{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(0,0,0,.1)}
-.spacer{flex:1}.btn{border:0;font-weight:800;font-size:13px;padding:9px 15px;border-radius:10px;cursor:pointer}
-.btn-print{background:var(--navy);color:#fff}.btn-save{background:var(--green);color:#fff}.btn-ghost{background:var(--soft);color:var(--navy);border:1px solid var(--line)}
-.editor{max-width:1180px;margin:18px auto 0;padding:0 20px}
-.panel{background:#fff;border:1px solid #e5e9ef;border-radius:15px;padding:18px 20px;margin-bottom:14px}
-.panel h2{font-size:13px;color:var(--slate);margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.panel h2:before{content:"";width:4px;height:15px;border-radius:2px;background:var(--blue)}
-.row{display:flex;gap:12px;align-items:end;flex-wrap:wrap}
-.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-.field{display:flex;flex-direction:column;gap:5px;min-width:130px}
-.field label{font-size:12px;color:var(--slate);font-weight:700}
-.field input,.field select,.field textarea{font-size:14px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fbfcfe;color:var(--ink)}
-.field textarea{min-height:76px;resize:vertical}
-.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue);background:#fff}
-.hint{font-size:11.5px;color:var(--slate);margin-top:8px}
-.answer-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.qtable-wrap{overflow:auto;border:1px solid #e5e9ef;border-radius:12px}
-.qtable{width:100%;border-collapse:collapse;min-width:560px}
-.qtable th{background:#f3f6fa;color:var(--slate);font-size:11px;font-weight:800;padding:8px;border-bottom:1px solid #e5e9ef}
-.qtable td{padding:7px;border-bottom:1px solid #edf0f4;text-align:center}
-.qtable tr:last-child td{border-bottom:0}
-.qtable input,.qtable select{width:100%;font-size:12px;padding:6px 7px;border:1px solid var(--line);border-radius:7px;background:#fff}.qtable .fixed{background:#f2f5f9;color:#42506a;font-weight:800}.qtable select.fixed{opacity:1;-webkit-text-fill-color:#42506a}
-.qtable .qno{font-weight:900;color:var(--navy)}
-.qtable .result.ok{color:var(--green);font-weight:900}.qtable .result.no{color:var(--red);font-weight:900}.qtable .answer-input{text-align:center;font-weight:900;font-size:15px}.qtable .fixed-answer{display:inline-block;font-size:15px;font-weight:900;color:#42506a;line-height:1.4}
-.qtable th:nth-child(5), .qtable th:nth-child(6), .qtable th:nth-child(7),
-.qtable td:nth-child(5), .qtable td:nth-child(6), .qtable td:nth-child(7){display:none}
-.score-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
-.mini{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
-.mini .k{font-size:10.5px;color:var(--slate);font-weight:700}.mini .v{font-size:20px;color:var(--navy);font-weight:900;margin-top:2px}
-.mini .s{font-size:10px;color:var(--blue);font-weight:800}
-.stage{padding:22px 20px 60px}.card{max-width:900px;margin:auto;background:#fff;border-radius:18px;box-shadow:var(--shadow);overflow:hidden;border:1px solid #e8edf4}
-.head{background:linear-gradient(120deg,var(--navy),#1d326b 70%,#264a8f);color:#fff;padding:26px 30px 22px;position:relative}
-.head:after{content:"";position:absolute;right:-60px;top:-60px;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,rgba(189,154,69,.22),transparent 70%)}
-.headtop{display:flex;justify-content:space-between;position:relative;z-index:1}.logo{display:flex;gap:12px;align-items:center}
-.mark{width:46px;height:46px;border-radius:12px;background:#fff;color:var(--navy);display:grid;place-items:center;font-weight:900}
-.logo .ko{font-size:15px;font-weight:900}.logo small{display:block;color:#bcd0f0;font-size:11px}
-.slogan{text-align:right;font-size:11.5px;color:#c6d6f1}.slogan b{display:block;color:var(--gold);font-size:12px}
-.title{position:relative;z-index:1;margin-top:18px}.title .kicker{font-size:11px;letter-spacing:.28em;color:#9ec0ee;font-weight:800}
-.title h1{font-size:25px;margin-top:2px}.title p{font-size:12.5px;color:#c6d6f1;margin-top:3px}
-.info{display:grid;grid-template-columns:repeat(6,1fr);border-bottom:1px solid #e5e9ef}
-.info .c{padding:12px 13px;border-right:1px solid #e5e9ef}.info .c:last-child{border-right:0}
-.info .k{font-size:10px;color:var(--slate);font-weight:700}.info .v{font-size:13.5px;font-weight:800;color:var(--navy);margin-top:2px}
-.body{padding:24px 30px}.block{margin-bottom:24px}
-.block-title{font-size:15px;font-weight:900;color:var(--navy);display:flex;align-items:center;gap:8px;margin-bottom:12px}
-.block-title .bar{width:5px;height:17px;border-radius:3px;background:linear-gradient(var(--blue),#4f8af0)}
-.summary{display:grid;grid-template-columns:190px 1fr;gap:16px}
-.score-hero{background:linear-gradient(160deg,#1b3068,#27457f);border-radius:16px;color:#fff;padding:20px;text-align:center;display:flex;flex-direction:column;justify-content:center}
-.score-hero .lab{font-size:12px;color:#bdd0ee}.score-hero .big{font-size:54px;font-weight:900;line-height:1;margin-top:5px}
-.score-hero .big span{font-size:16px;color:#9bb6e0}.badge{margin-top:12px;display:inline-block;align-self:center;background:#fff;color:var(--navy);font-weight:900;font-size:13px;padding:6px 14px;border-radius:999px}
-.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.metric{background:var(--soft);border:1px solid var(--line);border-radius:13px;padding:12px 14px}
-.metric .k{font-size:11px;color:var(--slate);font-weight:700}.metric .v{font-size:20px;font-weight:900;color:var(--navy);margin-top:2px}.metric .sub{font-size:10.5px;color:var(--blue);font-weight:800;margin-top:2px}
-.bars{display:flex;flex-direction:column;gap:12px}.barrow{display:grid;grid-template-columns:110px 1fr 52px;gap:10px;align-items:center}
-.barrow .nm{font-size:12.5px;font-weight:800}.track{height:10px;background:#edf1f7;border-radius:999px;overflow:hidden}
-.fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#3f7fe6,#2d6cdf)}.barrow .pt{text-align:right;font-size:12.5px;font-weight:900;color:var(--navy)}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.note{border:1px solid #e5e9ef;border-radius:13px;padding:15px 17px}.note h4{font-size:13px;font-weight:900;margin-bottom:8px}
-.note.strength h4{color:var(--green)}.note.growth h4{color:var(--blue)}
-.note ul{list-style:none;display:flex;flex-direction:column;gap:6px}.note li{font-size:12.5px;color:#3d485a;padding-left:20px;position:relative}.note li:before{content:"✓";position:absolute;left:0;font-weight:900}
-.note.strength li:before{color:var(--green)}.note.growth li:before{color:var(--blue)}
-.type-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.type-card{border:1px solid #e5e9ef;border-radius:12px;padding:12px 14px}
-.type-card .rowx{display:flex;justify-content:space-between;gap:10px}.type-card b{font-size:12.5px;color:var(--navy)}.type-card span{font-size:12px;color:var(--slate)}
-.comment{border:1px solid #e5e9ef;border-left:4px solid var(--navy);border-radius:12px;padding:15px 17px}
-.comment h4{font-size:13px;color:var(--navy);margin-bottom:7px}.comment p{font-size:13px;color:#39455a}
-.parent{background:linear-gradient(135deg,#16264a,#27457f);color:#fff;border-radius:14px;padding:19px 21px}
-.parent h4{font-size:13px;color:var(--gold);margin-bottom:7px}.parent p{font-size:13px;color:#e7eefb;line-height:1.7}
-.history{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.hp{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
-.hp .round{font-size:10px;color:var(--slate)}.hp .score{font-size:22px;font-weight:900;color:var(--navy)}.hp.current .score{color:var(--blue)}.hp .date{font-size:10px;color:var(--slate)}
-.foot{margin-top:20px;padding-top:14px;border-top:1px solid #e5e9ef;text-align:center;font-size:11px;color:var(--slate)}
-body.preview .editor{display:none}body.preview .stage{padding-top:30px}
-@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.score-strip{grid-template-columns:repeat(3,1fr)}.info{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:560px){.grid{grid-template-columns:1fr}.score-strip{grid-template-columns:repeat(2,1fr)}.summary{grid-template-columns:1fr}.two,.type-grid{grid-template-columns:1fr}.info{grid-template-columns:repeat(2,1fr)}}
-@media print{
- @page{size:A4;margin:7mm} html,body{background:#fff!important}.toolbar,.editor{display:none!important}.stage{padding:0}.card{box-shadow:none;border:0;max-width:100%;border-radius:0}
- .head{padding:14px 22px 12px}.title{margin-top:10px}.title h1{font-size:20px}.info{grid-template-columns:repeat(6,1fr)!important}
- .body{padding:12px 18px}.block{margin-bottom:10px}.block-title{font-size:13.5px;margin-bottom:7px}.summary{grid-template-columns:150px 1fr!important;gap:11px}
- .score-hero{padding:13px}.score-hero .big{font-size:38px}.metric{padding:8px 11px}.metric .v{font-size:17px}.two,.type-grid{grid-template-columns:1fr 1fr!important}
- .note,.comment{padding:10px 13px}.parent{padding:12px 15px}.block,.summary,.note,.comment,.parent{break-inside:avoid;page-break-inside:avoid}
-}
-.auth-overlay{position:fixed;inset:0;z-index:200;background:linear-gradient(135deg,#eef1f6,#dfe8f6);display:flex;align-items:center;justify-content:center;padding:20px}
-.auth-overlay.hidden{display:none}.login-card{width:min(420px,100%);background:#fff;border:1px solid #dfe5ef;border-radius:20px;box-shadow:0 22px 70px rgba(22,38,74,.18);padding:28px}
-.login-logo{display:flex;align-items:center;gap:12px;margin-bottom:20px}.login-mark{width:46px;height:46px;border-radius:12px;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:900}
-.login-title{font-size:20px;color:var(--navy);font-weight:900}.login-sub{font-size:12px;color:var(--slate);margin-top:2px}
-.login-card .field{margin-top:12px}.login-card .btn{width:100%;margin-top:15px;padding:11px}.login-error{min-height:18px;color:var(--red);font-size:12px;font-weight:700;margin-top:8px}
-.user-chip{display:none;align-items:center;gap:7px;font-size:11.5px;color:var(--navy);font-weight:800;background:var(--soft);border:1px solid var(--line);padding:7px 10px;border-radius:999px}.user-chip.on{display:flex}
-.cloud-status{font-size:11px;font-weight:800;color:var(--green);white-space:nowrap}.cloud-status.err{color:var(--red)}
-@media print{.auth-overlay{display:none!important}.user-chip,.cloud-status,#logoutBtn{display:none!important}}
-
-/* Compact student-answer entry: 5 questions per row */
-.qtable-wrap{overflow:visible;border:0;background:transparent}
-.qtable{display:block;min-width:0;width:100%}
-.qtable thead{display:none}
-.qtable tbody{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;padding:0}
-.qtable tbody tr{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:"qno key" "ans ans" "res res";gap:6px 8px;align-items:center;border:1px solid #dfe6f1;border-radius:12px;background:#fff;padding:10px;min-width:0}
-.qtable tbody td{border:0!important;padding:0!important;min-width:0}
-.qtable tbody td:nth-child(1){grid-area:qno;text-align:left;font-size:14px}
-.qtable tbody td:nth-child(2){display:none!important}
-.qtable tbody td:nth-child(3){grid-area:key;text-align:right}
-.qtable tbody td:nth-child(4){grid-area:ans}
-.qtable tbody td:nth-child(5),.qtable tbody td:nth-child(6),.qtable tbody td:nth-child(7){display:none!important}
-.qtable tbody td:nth-child(8){grid-area:res;text-align:center;font-size:13px;min-height:20px}
-.qtable .qno:after{content:"번";font-weight:700;margin-left:1px}
-.qtable .fixed-answer{font-size:15px}
-.qtable .fixed-answer:before{content:"정답 ";font-size:10px;font-weight:700;color:var(--slate);margin-right:3px}
-.qtable .answer-input{height:42px;font-size:18px!important;text-align:center;border-radius:9px!important;padding:5px!important}
-@media(max-width:900px){.qtable tbody{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:560px){.qtable tbody{grid-template-columns:repeat(2,minmax(0,1fr))}}
-
-
-.ai-eval-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.ai-comment-input{min-height:150px!important;font-size:14px!important;line-height:1.75!important;background:#fff!important}.teacher-memo-details{margin-top:12px;border-top:1px solid #e8edf4;padding-top:10px}.teacher-memo-details summary{cursor:pointer;color:var(--slate);font-size:12px;font-weight:800}.ai-status-error{color:var(--red)!important}.ai-status-ok{color:var(--green)!important}
-
-
-.ai-eval-layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:18px;align-items:start}
-.recent-tests-box{background:#f7f9fc;border:1px solid var(--line);border-radius:13px;padding:14px}
-.recent-tests-title{font-size:13px;font-weight:900;color:var(--navy)}
-.recent-tests-sub{font-size:10.5px;color:var(--slate);margin-top:2px;margin-bottom:10px}
-.recent-tests-list{display:flex;flex-direction:column;gap:8px}
-.recent-test-item{background:#fff;border:1px solid #e3e9f2;border-radius:10px;padding:9px 10px}
-.recent-test-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.recent-test-code{font-size:12px;font-weight:900;color:var(--navy)}
-.recent-test-score{font-size:16px;font-weight:900;color:var(--blue)}
-.recent-test-date{font-size:10px;color:var(--slate);margin-top:2px}
-.recent-empty{font-size:11px;color:var(--slate);padding:12px 4px;text-align:center}
-.ai-eval-main{min-width:0}
-@media(max-width:760px){.ai-eval-layout{grid-template-columns:1fr}.recent-tests-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:480px){.recent-tests-list{grid-template-columns:1fr}}
-
-
-.admin-login-link{width:100%;border:0;background:transparent;color:var(--slate);font-size:11.5px;font-weight:700;margin-top:12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
-.pin-admin-modal{position:fixed;inset:0;z-index:260;background:rgba(18,31,58,.38);display:none;align-items:center;justify-content:center;padding:20px}.pin-admin-modal.on{display:flex}
-.pin-admin-card{width:min(430px,100%);max-height:78vh;overflow:auto;background:#fff;border-radius:18px;border:1px solid #dfe5ef;box-shadow:0 22px 70px rgba(22,38,74,.22);padding:22px}
-.pin-admin-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}.pin-admin-head b{display:block;color:var(--navy);font-size:17px}.pin-admin-head span{display:block;color:var(--slate);font-size:11px;margin-top:2px}.pin-admin-head button{border:0;background:var(--soft);width:30px;height:30px;border-radius:9px;color:var(--navy);font-size:20px;cursor:pointer}
-.pin-add-row{display:grid;grid-template-columns:1fr 86px;gap:8px}.pin-add-row input{border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:17px;text-align:center;letter-spacing:.15em}.pin-add-row button{border:0;border-radius:9px;background:var(--green);color:#fff;font-weight:800;cursor:pointer}
-.pin-admin-status{min-height:20px;font-size:11px;color:var(--slate);margin:8px 0}.allowed-pin-list{display:flex;flex-direction:column;gap:7px}.pin-item{display:flex;align-items:center;justify-content:space-between;background:var(--soft);border:1px solid var(--line);padding:9px 11px;border-radius:10px}.pin-item b{color:var(--navy);letter-spacing:.12em}.pin-item button{border:0;background:#fff;color:var(--red);font-weight:800;font-size:11px;padding:5px 8px;border-radius:7px;cursor:pointer}
-#managePinsBtn{display:none}
-
+:root{--navy:#16264a;--blue:#2d6cdf;--soft:#eef3fb;--line:#d7e2f3;--ink:#202837;--slate:#6b7686;--green:#1d9e75;--red:#e24b4a;--gold:#bd9a45;--bg:#eef1f6;--font:"Pretendard","Pretendard Variable",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.6}button,input,select,textarea{font-family:inherit}.hidden{display:none!important}
+.toolbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);border-bottom:1px solid #e4e9f0}.toolbar-inner{max-width:1180px;margin:auto;padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}.brand{font-weight:900;color:var(--navy);display:flex;align-items:center;gap:8px}.brand-dot{width:28px;height:28px;border-radius:8px;background:var(--navy);color:#fff;display:grid;place-items:center}.spacer{flex:1}.btn{border:0;font-weight:800;font-size:13px;padding:9px 14px;border-radius:10px;cursor:pointer}.btn-green{background:var(--green);color:#fff}.btn-navy{background:var(--navy);color:#fff}.btn-soft{background:var(--soft);color:var(--navy);border:1px solid var(--line)}.status{font-size:11px;font-weight:800;color:var(--green)}.status.err{color:var(--red)}
+.editor{max-width:1180px;margin:18px auto;padding:0 20px}.panel{background:#fff;border:1px solid #e5e9ef;border-radius:15px;padding:18px 20px;margin-bottom:14px}.panel h2{font-size:13px;color:var(--slate);margin-bottom:14px}.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.field{display:flex;flex-direction:column;gap:5px;min-width:125px}.field label{font-size:12px;color:var(--slate);font-weight:700}.field input,.field select,.field textarea{font-size:14px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fbfcfe;color:var(--ink)}.field textarea{min-height:120px;resize:vertical}.hint{font-size:11.5px;color:var(--slate);margin-top:8px}
+.qgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.qcard{border:1px solid #dfe6f1;border-radius:12px;background:#fff;padding:10px}.qtop{display:flex;justify-content:space-between;gap:8px;align-items:center}.qno{font-weight:900;color:var(--navy)}.qkey{font-size:12px;color:var(--slate);font-weight:800}.qcard input{width:100%;height:42px;margin-top:7px;text-align:center;font-size:18px;font-weight:900;border:1px solid var(--line);border-radius:9px}.qres{text-align:center;min-height:20px;font-size:13px;font-weight:900;margin-top:5px}.qres.ok{color:var(--green)}.qres.no{color:var(--red)}
+.score-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.mini{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:10px 12px}.mini .k{font-size:10.5px;color:var(--slate);font-weight:700}.mini .v{font-size:19px;color:var(--navy);font-weight:900;margin-top:2px}.profile{background:#f7f9fc;border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.75;font-size:13px}.profile b{color:var(--navy)}
+.stage{padding:10px 20px 60px}.card{max-width:900px;margin:auto;background:#fff;border-radius:18px;box-shadow:0 12px 36px rgba(20,40,80,.12);overflow:hidden;border:1px solid #e8edf4}.head{background:linear-gradient(120deg,var(--navy),#1d326b 70%,#264a8f);color:#fff;padding:25px 30px}.headtop{display:flex;justify-content:space-between;align-items:start}.mark{width:46px;height:46px;border-radius:12px;background:#fff;color:var(--navy);display:grid;place-items:center;font-weight:900}.logo{display:flex;gap:12px;align-items:center}.logo b{font-size:15px}.logo small{display:block;color:#bcd0f0;font-size:11px}.head h1{font-size:25px;margin-top:18px}.head p{font-size:12.5px;color:#c6d6f1;margin-top:3px}.info{display:grid;grid-template-columns:repeat(6,1fr);border-bottom:1px solid #e5e9ef}.info-cell{padding:12px 13px;border-right:1px solid #e5e9ef}.info-cell:last-child{border-right:0}.info-k{font-size:10px;color:var(--slate);font-weight:700}.info-v{font-size:13.5px;font-weight:800;color:var(--navy);margin-top:2px}.body{padding:24px 30px}.block{margin-bottom:22px}.block-title{font-size:15px;font-weight:900;color:var(--navy);margin-bottom:10px}.summary{display:grid;grid-template-columns:190px 1fr;gap:16px}.score-hero{background:linear-gradient(160deg,#1b3068,#27457f);border-radius:16px;color:#fff;padding:20px;text-align:center}.score-big{font-size:52px;font-weight:900;line-height:1.05}.score-big span{font-size:16px;color:#9bb6e0}.badge{margin-top:10px;display:inline-block;background:#fff;color:var(--navy);font-weight:900;font-size:13px;padding:6px 14px;border-radius:999px}.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.metric{background:var(--soft);border:1px solid var(--line);border-radius:13px;padding:12px}.metric .k{font-size:11px;color:var(--slate);font-weight:700}.metric .v{font-size:18px;font-weight:900;color:var(--navy);margin-top:2px}.analysis-box,.comment{border:1px solid #e5e9ef;border-left:4px solid var(--navy);border-radius:12px;padding:15px 17px}.analysis-box p,.comment p{font-size:13px;color:#39455a;line-height:1.75}.foot{margin-top:18px;padding-top:13px;border-top:1px solid #e5e9ef;text-align:center;font-size:11px;color:var(--slate)}
+.auth-overlay{position:fixed;inset:0;z-index:200;background:linear-gradient(135deg,#eef1f6,#dfe8f6);display:flex;align-items:center;justify-content:center;padding:20px}.login-card{width:min(420px,100%);background:#fff;border:1px solid #dfe5ef;border-radius:20px;box-shadow:0 22px 70px rgba(22,38,74,.18);padding:28px}.login-title{font-size:20px;color:var(--navy);font-weight:900;margin-bottom:14px}.login-error{min-height:18px;color:var(--red);font-size:12px;font-weight:700;margin-top:8px}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.qgrid{grid-template-columns:repeat(3,1fr)}.score-strip{grid-template-columns:repeat(3,1fr)}.info{grid-template-columns:repeat(3,1fr)}}@media(max-width:560px){.grid,.summary{grid-template-columns:1fr}.qgrid{grid-template-columns:repeat(2,1fr)}.score-strip{grid-template-columns:repeat(2,1fr)}.info{grid-template-columns:repeat(2,1fr)}}
+@media print{@page{size:A4;margin:7mm}body{background:#fff}.toolbar,.editor,.auth-overlay{display:none!important}.stage{padding:0}.card{box-shadow:none;border:0;max-width:100%;border-radius:0}.head{padding:15px 22px}.head h1{font-size:20px;margin-top:10px}.body{padding:14px 18px}.block{margin-bottom:12px}.summary{grid-template-columns:155px 1fr}.score-big{font-size:38px}}
 </style>
 </head>
 <body>
 <div class="auth-overlay" id="authOverlay">
   <div class="login-card">
-    <div class="login-logo"><div class="login-mark">YMS</div><div><div class="login-title">Growth Test 로그인</div><div class="login-sub">승인된 선생님만 이용할 수 있습니다.</div></div></div>
+    <div class="login-title">YMS Growth Test 로그인</div>
     <div id="teacherLoginBox">
-      <div class="field"><label>핸드폰 번호 뒷자리 4자리</label><input id="teacherPin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="••••" style="text-align:center;font-size:22px;letter-spacing:.28em"></div>
-      <button class="btn btn-save" id="teacherPinBtn" type="button">선생님 로그인</button>
+      <div class="field"><label>핸드폰 번호 뒷자리 4자리</label><input id="teacherPin" type="password" inputmode="numeric" maxlength="4" placeholder="••••" style="text-align:center;font-size:22px;letter-spacing:.25em"></div>
+      <button class="btn btn-green" id="teacherPinBtn" style="width:100%;margin-top:14px">선생님 로그인</button>
       <div class="login-error" id="teacherPinError"></div>
-      <button class="admin-login-link" id="showAdminLogin" type="button">운영자 로그인</button>
+      <button class="btn btn-soft" id="showAdminLogin" style="width:100%;margin-top:8px">운영자 로그인</button>
     </div>
-    <div id="adminLoginBox" style="display:none">
-      <div class="field"><label>운영자 이메일</label><input id="loginEmail" type="email" autocomplete="username" placeholder="운영자 이메일"></div>
-      <div class="field"><label>비밀번호</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="비밀번호"></div>
-      <button class="btn btn-save" id="loginBtn" type="button">운영자 로그인</button>
+    <div id="adminLoginBox" class="hidden">
+      <div class="field"><label>운영자 이메일</label><input id="loginEmail" type="email"></div>
+      <div class="field" style="margin-top:10px"><label>비밀번호</label><input id="loginPassword" type="password"></div>
+      <button class="btn btn-green" id="loginBtn" style="width:100%;margin-top:14px">운영자 로그인</button>
       <div class="login-error" id="loginError"></div>
-      <button class="admin-login-link" id="backTeacherLogin" type="button">← 선생님 로그인으로</button>
+      <button class="btn btn-soft" id="backTeacherLogin" style="width:100%;margin-top:8px">← 선생님 로그인</button>
     </div>
   </div>
 </div>
-<div class="pin-admin-modal" id="pinAdminModal">
-  <div class="pin-admin-card">
-    <div class="pin-admin-head"><div><b>승인번호 관리</b><span>선생님 핸드폰 뒷자리 4자리</span></div><button id="closePinAdmin" type="button">×</button></div>
-    <div class="pin-add-row"><input id="newAllowedPin" inputmode="numeric" maxlength="4" placeholder="예: 1234"><button id="addAllowedPinBtn" type="button">추가</button></div>
-    <div id="pinAdminStatus" class="pin-admin-status"></div>
-    <div id="allowedPinList" class="allowed-pin-list"></div>
-  </div>
-</div>
-<div class="toolbar">
-  <div class="toolbar-inner">
-    <div class="brand"><span class="dot">Y</span>YMS Growth Test</div>
-    <div class="seg" id="modeSeg"><button data-mode="edit" class="on">선생님 입력</button><button data-mode="preview">학부모 미리보기</button></div>
-    <div class="cloud-status" id="cloudStatus">Firebase 연결 대기</div><div class="user-chip" id="userChip"></div><button class="btn btn-ghost" id="managePinsBtn" type="button">승인번호 관리</button><button class="btn btn-ghost" id="logoutBtn" type="button" style="display:none">로그아웃</button><div class="spacer"></div>
-    <button class="btn btn-ghost" id="resetBtn">새 평가</button>
-    <button class="btn btn-save" id="saveBtn">저장하기</button>
-    <button class="btn btn-print" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
-  </div>
-</div>
+<div class="toolbar"><div class="toolbar-inner"><div class="brand"><span class="brand-dot">Y</span>YMS Growth Test</div><div class="status" id="cloudStatus">로그인 필요</div><div class="spacer"></div><button class="btn btn-soft" id="logoutBtn" style="display:none">로그아웃</button><button class="btn btn-soft" id="resetBtn">새 평가</button><button class="btn btn-green" id="saveBtn">저장하기</button><button class="btn btn-navy" onclick="window.print()">인쇄 / PDF 저장</button></div></div>
 <div class="editor">
-  <div class="panel">
-    <h2>학생 · 시험 정보</h2>
-    <div class="grid">
-      <div class="field"><label>학생명</label><input id="name" placeholder="학생명"></div>
-      <div class="field"><label>학교</label><input id="school" placeholder="학교"></div>
-      <div class="field"><label>학년</label><select id="grade"><option>중1</option><option>중2</option><option>중3</option><option>고1</option><option>고2</option></select></div>
-      <div class="field"><label>시험코드</label><select id="testCode"></select></div>
-      <div class="field"><label>평가일</label><input id="date"></div>
-      <div class="field"><label>담당교사</label><input id="teacher" placeholder="담당교사"></div>
-      <div class="field"><label>시험 문항 수</label><input id="qcount" type="number" min="1" max="40" value="20"></div>
-      <div class="field"><label>시험 난이도 메모</label><input id="difficultyMemo" value="해당 회차 기준 난이도"></div>
-      <div class="field"><label>총점 환산</label><select id="scoreMode"><option value="points">문항별 배점 합산</option><option value="percent">정답률 100점 환산</option></select></div>
-      <div class="field"><label>저장 학생</label><select id="studentPick"><option value="">— 저장된 평가 불러오기 —</option></select></div>
-    </div>
-    <div class="hint">현재까지 제작 완료된 시험만 목록에 표시됩니다. 시험코드를 선택하면 해당 시험의 문항 수·정답·배점이 자동 적용됩니다.</div>
-  </div>
-  <div class="panel">
-    <h2>문항별 정답 · 학생 답 · 분석 메타데이터</h2>
-    <div class="answer-toolbar">
-      <button class="btn btn-ghost" id="fill20">시험 데이터 다시 불러오기</button>
-      <button class="btn btn-ghost" type="button" disabled style="opacity:.75;cursor:default">✓ 정답·배점 자동 불러오기</button>
-      <button class="btn btn-ghost" id="clearAnswers">학생 답만 지우기</button>
-    </div>
-    <div class="qtable-wrap"><table class="qtable">
-      <thead><tr><th>문항</th><th>배점</th><th>정답</th><th>학생답</th><th>평가영역</th><th>문제유형</th><th>난이도</th><th>결과</th></tr></thead>
-      <tbody id="qbody"></tbody>
-    </table></div>
-    <div class="hint">시험코드를 선택하면 정답·배점·분석 기준이 자동 적용됩니다. 학생 답은 1~5 숫자로 바로 입력하면 됩니다.</div>
-  </div>
-  <div class="panel"><h2>자동 계산 결과</h2><div class="score-strip" id="scoreStrip"></div></div>
-  <div class="panel ai-eval-panel"><h2>AI 담당교사 평가서</h2>
-    <div class="ai-eval-layout">
-      <aside class="recent-tests-box">
-        <div class="recent-tests-title">최근 Growth Test</div>
-        <div class="recent-tests-sub">현재 학생의 최근 평가 기록</div>
-        <div id="recentTestsList" class="recent-tests-list"><div class="recent-empty">저장된 평가가 없습니다.</div></div>
-      </aside>
-      <div class="ai-eval-main">
-        <div class="ai-eval-top">
-          <button class="btn btn-save" id="generateAiComment" type="button">✨ AI 평가서 만들기</button>
-          <span class="hint" id="aiStatus">시험 결과를 입력한 뒤 AI 평가서를 생성하세요.</span>
-        </div>
-        <div class="field" style="margin-top:12px"><label>담당교사 Comment · AI 초안 (수정 가능)</label><textarea id="aiComment" class="ai-comment-input" placeholder="AI 평가서가 여기에 생성됩니다."></textarea></div>
-        <details class="teacher-memo-details"><summary>선생님 추가 메모</summary><div class="grid" style="grid-template-columns:1fr 1fr;margin-top:10px">
-          <div class="field"><label>강점 추가 메모</label><textarea id="strengthMemo"></textarea></div>
-          <div class="field"><label>보완점 추가 메모</label><textarea id="growthMemo"></textarea></div>
-        </div></details>
-      </div>
-    </div>
-  </div>
+  <div class="panel"><h2>학생 · 시험 정보</h2><div class="grid">
+    <div class="field"><label>학생명</label><input id="name" placeholder="학생명"></div><div class="field"><label>학교</label><input id="school" placeholder="학교"></div>
+    <div class="field"><label>학년</label><select id="grade"><option>초4</option><option>초5</option><option>초6</option><option>중1</option><option>중2</option><option>중3</option><option>고1</option></select></div>
+    <div class="field"><label>시험코드</label><select id="testCode"></select></div><div class="field"><label>평가일</label><input id="date"></div><div class="field"><label>담당교사</label><input id="teacher"></div>
+    <div class="field"><label>저장 학생</label><select id="studentPick"><option value="">— 저장된 평가 불러오기 —</option></select></div>
+  </div><div class="hint">기존 시험 데이터는 제거하고 E1-1 ~ E1-6만 등록했습니다. 시험코드 선택 시 정답과 분석 프로필이 자동 적용됩니다.</div></div>
+  <div class="panel"><h2>학생 답 입력</h2><div id="qgrid" class="qgrid"></div><div class="hint">학생 답은 1~5 숫자로 입력하면 됩니다. 입력된 문항만 오답/정답 분석에 사용합니다.</div></div>
+  <div class="panel"><h2>자동 계산 결과</h2><div id="scoreStrip" class="score-strip"></div></div>
+  <div class="panel"><h2>이번 시험 분석 프로필</h2><div id="profileBox" class="profile"></div></div>
+  <div class="panel"><h2>AI 담당교사 평가서</h2><button class="btn btn-green" id="generateAiComment">✨ AI 평가서 만들기</button><span class="hint" id="aiStatus" style="margin-left:8px">학생 답 입력 후 생성하세요.</span><div class="field" style="margin-top:12px"><textarea id="aiComment" placeholder="AI 평가서가 여기에 생성됩니다."></textarea></div></div>
 </div>
 <div class="stage"><div class="card" id="card"></div></div>
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBHFzS1vB0PN0kkt8gzTaXPJnvZQAP1qts",
-  authDomain: "yms-growth-test.firebaseapp.com",
-  projectId: "yms-growth-test",
-  storageBucket: "yms-growth-test.firebasestorage.app",
-  messagingSenderId: "1036597002427",
-  appId: "1:1036597002427:web:716e182ab1173ba3b6699e",
-  measurementId: "G-NGS2N0KE1Z"
+const firebaseConfig={apiKey:"AIzaSyBHFzS1vB0PN0kkt8gzTaXPJnvZQAP1qts",authDomain:"yms-growth-test.firebaseapp.com",projectId:"yms-growth-test",storageBucket:"yms-growth-test.firebasestorage.app",messagingSenderId:"1036597002427",appId:"1:1036597002427:web:716e182ab1173ba3b6699e",measurementId:"G-NGS2N0KE1Z"};
+firebase.initializeApp(firebaseConfig);const auth=firebase.auth(),db=firebase.firestore();let CURRENT_USER=null,REPORTS_CACHE=[],AI_COMMENT='';
+const TEST_DATA={
+'E1-1':{keys:['①','②','①','④','③','④','③','⑤','①','④','⑤','①','①','②','②','⑤','③','④','③','⑤','②','⑤','⑤','①','②','②','④','③','②','⑤'],points:[10,10,10,10,10,10,10,10,10,10,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],profile:{overall:'하',reading:'하',types:'내용일치 · 주제 · 순서 · 목적 · 요약',summary:'가장 좋은 입문형입니다. 문장이 짧고 정답 근거가 직접적으로 제시되는 비율이 높아 초5가 Growth Test를 처음 경험하는 단계에 적합합니다.',guide:'직접 제시된 정보와 글의 중심 내용을 안정적으로 찾는지를 우선 평가하고, 초반에는 점수보다 시험 형식 적응과 기본 독해 정확도를 함께 봅니다.'}},
+'E1-2':{keys:['⑤','①','⑤','①','④','③','④','②','①','②','④','④','①','③','②','③','⑤','④','⑤','④','②','②','⑤','①','④','①','③','②','⑤','⑤'],points:[10,10,10,10,10,10,10,10,10,10,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4],profile:{overall:'하',reading:'하',types:'목적 · 심경 · 내용일치 · 문맥어휘',summary:'지문 길이는 E1-1보다 조금 늘지만 추론 부담은 낮은 기초 독해 확인형입니다. 정답 근거가 비교적 명확한 편입니다.',guide:'기본 내용 확인뿐 아니라 목적과 심경, 문맥 속 표현을 읽어내는 초기 응용력이 형성되는지를 봅니다.'}},
+'E1-3':{keys:['①','②','④','③','③','①','③','①','⑤','③','④','⑤','①','⑤','③','②','④','②','⑤','⑤','②','⑤','②','③','④'],points:[10,10,10,10,10,10,10,10,10,10,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4],profile:{overall:'하',reading:'하~중하',types:'지시어 · 주장 · 주제 · 순서 · 요약',summary:'단순 정보 찾기에서 글 전체 파악으로 넘어가는 단계입니다. 문장 하나의 뜻보다 지시 관계와 글의 중심 흐름을 함께 읽기 시작합니다.',guide:'직접 정보는 물론 지시어와 중심 내용, 간단한 흐름을 묶어 이해하는 능력이 성장하고 있는지를 봅니다.'}},
+'E1-4':{keys:['②','②','③','④','⑤','③','①','②','⑤','⑤','③','①','④','①','③','⑤','⑤','②','④','②','④','④','②','⑤','①'],points:Array(25).fill(1),profile:{overall:'하~중하',reading:'하~중하',types:'연결어 · 내용일치 · 순서 · 요약',summary:'정보량이 조금 증가하고 문장 관계를 보기 시작하는 단계입니다. 연결어와 순서, 요약을 통해 문장 간 관계를 읽는 능력이 중요해집니다.',guide:'낱문장 해석에 머무르지 않고 앞뒤 문장의 관계와 글의 전개를 따라갈 수 있는지를 평가합니다.'}},
+'E1-5':{keys:['①','②','⑤','⑤','①','③','③','④','②','①','②','③','②','③','⑤','⑤','④','③','①','②','④','④','③','⑤','④'],points:Array(25).fill(1),profile:{overall:'중하',reading:'중하',types:'주제 · 심경 · 무관문장 · 삽입 · 빈칸 · 요약',summary:'논리적 흐름 유형이 처음 본격적으로 등장합니다. 주제 파악에 더해 무관문장, 문장 삽입, 빈칸처럼 문장 간 논리를 판단해야 하는 문제가 늘어납니다.',guide:'기본 독해 정확도와 함께 글의 흐름을 유지하는 문장을 찾고 논리적 단서를 활용하는 능력을 중점적으로 봅니다.'}},
+'E1-6':{keys:['③','②','①','①','③','①','⑤','③','②','④','⑤','④','①','⑤','①','⑤','④','④','③','③','②','③','⑤','④','①'],points:Array(25).fill(1),profile:{overall:'중하',reading:'중하',types:'빈칸 · 무관문장 · 순서 · 목적 · 글의 종류',summary:'유형 수가 많아 학생의 약점을 구분하기 좋은 E1 최종 단계입니다. 기본 내용 파악과 논리 흐름 문제를 함께 처리해야 합니다.',guide:'E1 과정의 마무리 평가로, 듣기와 기본 독해뿐 아니라 빈칸·순서·흐름 유형에서 중학교형 독해로 넘어갈 준비가 되었는지를 봅니다.'}}
 };
-firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.firestore();
-let REPORTS_CACHE=[];
-let META_CACHE={};
-let CURRENT_USER=null;
-let AI_COMMENT='';
-
-const AREAS=['핵심 내용 파악','세부·어휘 이해','추론 능력','논리 구조 파악'];
-const TYPES=['글의 목적','심경/분위기','주제','제목','내용 일치','내용 불일치','세부 내용/이유','어휘 의미','적절한 어휘','빈칸 추론','함축 의미/추론','무관한 문장','글의 순서','문장 삽입','요약/핵심 내용','주장/요지'];
-function areaForType(type){
-  if(['글의 목적','심경/분위기','주제','제목','요약/핵심 내용','주장/요지'].includes(type))return '핵심 내용 파악';
-  if(['내용 일치','내용 불일치','세부 내용/이유','어휘 의미','적절한 어휘'].includes(type))return '세부·어휘 이해';
-  if(['빈칸 추론','함축 의미/추론'].includes(type))return '추론 능력';
-  if(['무관한 문장','글의 순서','문장 삽입'].includes(type))return '논리 구조 파악';
-  return '핵심 내용 파악';
-}
-function normalizeArea(area,type){
-  if(AREAS.includes(area))return area;
-  return areaForType(type);
-}
-
-const DIFF=['중','중상','상','최상'];
-const ANSWERS=['','①','②','③','④','⑤'];
-const TEST_DATA={"M1-1":{"points":[4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,7,7,3,3],"keys":["②","①","①","①","②","③","①","①","②","①","①","①","④","①","④","①","①","②","①","①"]},"M1-2":{"points":[4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,7,7,3,3],"keys":["①","②","③","④","⑤","①","②","③","④","⑤","①","②","③","④","⑤","①","②","③","④","⑤"]},"M1-3":{"points":[4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,7,7,3,3],"keys":["⑤","④","③","②","①","⑤","④","③","②","①","⑤","④","③","②","①","⑤","④","③","②","①"]},"M1-4":{"points":[4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,7,7,3,3],"keys":["①","③","⑤","②","④","①","③","⑤","②","④","①","③","⑤","②","④","①","③","⑤","②","④"]},"M1-5":{"points":[4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,7,7,3,3],"keys":["②","④","①","③","⑤","②","④","①","③","⑤","②","④","①","③","⑤","②","④","①","③","⑤"]},"M1-6":{"points":[4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,7,7,3,3],"keys":["③","⑤","②","④","①","③","⑤","②","④","①","③","⑤","②","④","①","③","⑤","②","④","①"]},"M2-1":{"points":[4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,7,7,3,3],"keys":["④","①","③","⑤","②","④","①","③","⑤","②","④","①","③","⑤","②","④","①","③","⑤","②"]},"M2-2":{"points":[4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,7,7,3,3],"keys":["⑤","②","④","①","③","⑤","②","④","①","③","⑤","②","④","①","③","⑤","②","④","①","③"]},"M2-3":{"points":[4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,7,7,3,3],"keys":["①","④","②","⑤","③","①","④","②","⑤","③","①","④","②","⑤","③","①","④","②","⑤","③"]},"M2-4":{"points":[4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,7,7,3,3],"keys":["②","⑤","③","①","④","②","⑤","③","①","④","②","⑤","③","①","④","②","⑤","③","①","④"]},"M2-5":{"points":[4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,7,7,3,3],"keys":["③","①","④","②","⑤","③","①","④","②","⑤","③","①","④","②","⑤","③","①","④","②","⑤"]},"M2-6":{"points":[4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,7,7,3,3],"keys":["④","②","⑤","③","①","④","②","⑤","③","①","④","②","⑤","③","①","④","②","⑤","③","①"]},"M3-2":{"points":[4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,7,7,3,3],"keys":["⑤","③","①","④","②","⑤","③","①","④","②","⑤","③","①","④","②","⑤","③","①","④","②"]},"M3-3":{"points":[4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,7,7,3,3],"keys":["①","⑤","④","③","②","①","⑤","④","③","②","①","⑤","④","③","②","①","⑤","④","③","②"]},"M3-4":{"points":[4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,7,7,3,3],"keys":["②","①","⑤","④","③","②","①","⑤","④","③","②","①","⑤","④","③","②","①","⑤","④","③"]},"M3-5":{"points":[4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,7,7,3,3],"keys":["③","②","①","⑤","④","③","②","①","⑤","④","③","②","①","⑤","④","③","②","①","⑤","④"]},"M3-6":{"points":[4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,7,7,3,3],"keys":["②","④","⑤","①","③","④","②","⑤","③","①","④","②","⑤","③","④","①","⑤","②","③","①"]},"H1-1":{"points":[4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,7,7,3,4],"keys":["②","④","⑤","①","③","④","②","⑤","③","①","④","②","⑤","③","④","①","⑤","②","③","①"]}};
-const TESTS=Object.keys(TEST_DATA);
-const $=id=>document.getElementById(id);
-const K_META='yms_growth_meta_v1', K_REPORTS='yms_growth_reports_v1';
-function today(){const d=new Date(),p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}.${p(d.getMonth()+1)}.${p(d.getDate())}`}
-function load(k,d){if(k===K_REPORTS)return REPORTS_CACHE;if(k===K_META)return META_CACHE;return d}
-function save(k,v){if(k===K_REPORTS)REPORTS_CACHE=v;if(k===K_META)META_CACHE=v}
-function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
-function makeOptions(arr,selected){return arr.map(v=>`<option ${v===selected?'selected':''}>${esc(v)}</option>`).join('')}
-function defaultArea(i){return areaForType(defaultType(i))}
-function defaultType(i){const cycle=['글의 목적','심경/분위기','주제','제목','내용 일치','내용 불일치','세부 내용/이유','어휘 의미','적절한 어휘','빈칸 추론','함축 의미/추론','무관한 문장','글의 순서','문장 삽입','요약/핵심 내용','주장/요지'];return cycle[(i-1)%cycle.length]}
-function difficultyForCode(code,i){const base=code.startsWith('H1')?'상':code.startsWith('M3')?'중상':'중';if(i>=15&&base!=='중')return'상';return base}
-function getMeta(code){return META_CACHE[code]||{}}
-async function setMeta(code,data){META_CACHE[code]=data;await db.collection('testMetadata').doc(code).set({...data,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:CURRENT_USER?.uid||null},{merge:true})}
-function normalizeStudentAnswer(v){const map={'1':'①','2':'②','3':'③','4':'④','5':'⑤','①':'①','②':'②','③':'③','④':'④','⑤':'⑤'};return map[String(v||'').trim()]||''}
-function rowsData(){return[...document.querySelectorAll('#qbody tr')].map((tr,i)=>({n:i+1,point:Number(tr.querySelector('.pt').value)||0,key:tr.querySelector('.key').dataset.key||tr.querySelector('.key').textContent.trim(),ans:normalizeStudentAnswer(tr.querySelector('.ans').value),area:tr.querySelector('.area').value,type:tr.querySelector('.type').value,diff:tr.querySelector('.diff').value}))}
-function buildRows(){const code=$('testCode').value,fixed=TEST_DATA[code],n=fixed?.keys?.length||20;$('qcount').value=n;const meta=getMeta(code);$('qbody').innerHTML='';for(let i=1;i<=n;i++){const saved=(meta.rows||[])[i-1]||{},point=fixed?.points?.[i-1]??5,key=fixed?.keys?.[i-1]||'',tr=document.createElement('tr');tr.innerHTML=`<td class="qno">${i}</td><td><input class="pt fixed" type="number" value="${point}" readonly></td><td><span class="key fixed-answer" data-key="${key}">${key}</span></td><td><input class="ans answer-input" type="text" inputmode="numeric" maxlength="1" aria-label="학생 답"></td><td><select class="area">${makeOptions(AREAS,normalizeArea(saved.area,saved.type||defaultType(i)))}</select></td><td><select class="type">${makeOptions(TYPES,saved.type||defaultType(i))}</select></td><td><select class="diff">${makeOptions(DIFF,saved.diff||difficultyForCode(code,i))}</select></td><td class="result">—</td>`;$('qbody').appendChild(tr)}hookRows();recalc()}
-function hookRows(){document.querySelectorAll('#qbody .answer-input').forEach(x=>{x.oninput=()=>{const raw=x.value.trim();if(raw&&!/^[1-5①②③④⑤]$/.test(raw))x.value='';recalc();render()};x.onkeydown=(e)=>{if(e.key==='Enter'){e.preventDefault();const inputs=[...document.querySelectorAll('#qbody .answer-input')];const idx=inputs.indexOf(x);if(idx>=0&&idx<inputs.length-1){inputs[idx+1].focus();inputs[idx+1].select()}}}});document.querySelectorAll('#qbody input:not(.answer-input),#qbody select').forEach(x=>x.oninput=()=>{recalc();render()})}
-function calc(){const rows=rowsData(),scored=rows.filter(r=>r.key&&r.ans);let earned=0,total=0,correct=0;rows.forEach(r=>{total+=r.point;if(r.key&&r.ans&&r.key===r.ans){earned+=r.point;correct++}});const score=$('scoreMode').value==='percent'?(scored.length?Math.round(correct/scored.length*100):0):(total?Math.round(earned/total*100):0);const byArea={};AREAS.forEach(a=>byArea[a]={correct:0,total:0,earned:0,points:0});const byType={};rows.forEach(r=>{if(!byType[r.type])byType[r.type]={correct:0,total:0};if(r.key){byArea[r.area].total++;byArea[r.area].points+=r.point;byType[r.type].total++;if(r.ans&&r.ans===r.key){byArea[r.area].correct++;byArea[r.area].earned+=r.point;byType[r.type].correct++}}});const areaPct={};AREAS.forEach(a=>areaPct[a]=byArea[a].points?Math.round(byArea[a].earned/byArea[a].points*100):0);return{rows,score,correct,answered:scored.length,totalQuestions:rows.length,byArea,areaPct,byType}}
-function levelText(code,score){const stage=code.split('-')[0];if(score>=90)return`${stage} 안정권`;if(score>=80)return`${stage} 상위권`;if(score>=70)return`${stage} 도달`;if(score>=60)return`${stage} 보완 필요`;return`${stage} 기초 재정비`}
-function areaRank(c){return AREAS.map(a=>({a,v:c.areaPct[a]})).sort((x,y)=>y.v-x.v)}
-function recalc(){const c=calc();document.querySelectorAll('#qbody tr').forEach((tr,i)=>{const r=c.rows[i],el=tr.querySelector('.result');if(!r.key||!r.ans){el.textContent='—';el.className='result'}else if(r.key===r.ans){el.textContent='O';el.className='result ok'}else{el.textContent='X';el.className='result no'}});const rank=areaRank(c),strong=rank[0],weak=[...rank].reverse().find(x=>c.byArea[x.a].total)||rank[rank.length-1];$('scoreStrip').innerHTML=[['총점',`${c.score}점`,'100점 환산'],['정답',`${c.correct}/${c.totalQuestions}`,'문항'],['배점 합계',`${c.rows.reduce((a,r)=>a+r.point,0)}점`,'시험지 인쇄 기준'],['현재 레벨',levelText($('testCode').value,c.score),'Growth Level'],['강점',strong.a,`${strong.v}%`],['보완',weak.a,`${weak.v}%`],['응답 문항',`${c.answered}`,`/ ${c.totalQuestions}`],['시험 코드',$('testCode').value,'YMS Growth Test']].map(x=>`<div class="mini"><div class="k">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${x[2]}</div></div>`).join('')}
-function teacherComment(c){const rank=areaRank(c),strong=rank[0],weak=[...rank].reverse().find(x=>c.byArea[x.a].total)||rank[rank.length-1];let txt=`${$('name').value||'학생'} 학생은 ${$('testCode').value}에서 100점 환산 ${c.score}점을 기록했습니다. ${strong.a} 영역이 ${strong.v}%로 가장 안정적이며, ${weak.a} 영역은 ${weak.v}%로 우선 보완이 필요합니다.`;if($('growthMemo').value.trim())txt+=` ${$('growthMemo').value.trim()}`;return txt}
-function parentComment(c){const rank=areaRank(c),strong=rank[0],weak=[...rank].reverse().find(x=>c.byArea[x.a].total)||rank[rank.length-1];return`${$('name').value||'학생'} 학생의 현재 Growth Test 수준은 ${levelText($('testCode').value,c.score)}입니다. ${strong.a}에서 강점을 보이고 있으며, 다음 단계에서는 ${weak.a}의 정확도를 높여 전체 독해 균형을 안정시키는 것이 중요합니다.`}
-function historyFor(name){return REPORTS_CACHE.filter(r=>r.name===name).sort((a,b)=>String(a.date).localeCompare(String(b.date))).slice(-4)}
-function render(){const c=calc(),rank=areaRank(c),strong=rank[0],weak=[...rank].reverse().find(x=>c.byArea[x.a].total)||rank[rank.length-1],hist=historyFor($('name').value.trim()),typeCards=AREAS.map(k=>{const v=c.byArea[k]||{correct:0,total:0,earned:0,points:0};const p=v.points?Math.round(v.earned/v.points*100):0;return`<div class="type-card"><div class="rowx"><b>${esc(k)}</b><span>${v.correct}/${v.total} · ${p}%</span></div><div class="track"><div class="fill" style="width:${p}%"></div></div></div>`}).join('');$('card').innerHTML=`<div class="head"><div class="headtop"><div class="logo"><div class="mark">YMS</div><div class="ko">YMS Growth Test<small>Monthly Reading Achievement Assessment</small></div></div><div class="slogan"><b>MEASURE · ANALYZE · GROW</b>독해 성취를 분석하고<br>다음 성장 지점을 제시합니다.</div></div><div class="title"><div class="kicker">GROWTH TEST REPORT</div><h1>영어 독해 성장 분석 보고서</h1><p>${esc($('testCode').value)} · ${esc($('difficultyMemo').value)}</p></div></div><div class="info"><div class="c"><div class="k">학생명</div><div class="v">${esc($('name').value||'-')}</div></div><div class="c"><div class="k">학교</div><div class="v">${esc($('school').value||'-')}</div></div><div class="c"><div class="k">학년</div><div class="v">${esc($('grade').value)}</div></div><div class="c"><div class="k">시험코드</div><div class="v">${esc($('testCode').value)}</div></div><div class="c"><div class="k">평가일</div><div class="v">${esc($('date').value||'-')}</div></div><div class="c"><div class="k">담당교사</div><div class="v">${esc($('teacher').value||'-')}</div></div></div><div class="body"><div class="block"><div class="block-title"><span class="bar"></span>종합 성취도</div><div class="summary"><div class="score-hero"><div class="lab">Growth Score</div><div class="big">${c.score}<span> / 100</span></div><div class="badge">${levelText($('testCode').value,c.score)}</div></div><div class="metrics"><div class="metric"><div class="k">시험 수준</div><div class="v" style="font-size:16px">${esc($('testCode').value)}</div><div class="sub">${esc($('difficultyMemo').value)}</div></div><div class="metric"><div class="k">정답 문항</div><div class="v">${c.correct}/${c.totalQuestions}</div><div class="sub">현재 입력 기준</div></div><div class="metric"><div class="k">가장 강한 영역</div><div class="v" style="font-size:16px">${strong.a}</div><div class="sub">${strong.v}%</div></div><div class="metric"><div class="k">우선 보완 영역</div><div class="v" style="font-size:16px">${weak.a}</div><div class="sub">${weak.v}%</div></div></div></div></div><div class="block"><div class="block-title"><span class="bar"></span>4대 독해 영역별 성취도</div><div class="type-grid">${typeCards}</div></div><div class="block"><div class="two"><div class="note strength"><h4>✓ 강점</h4><ul><li>${strong.a} 영역 ${strong.v}%</li><li>${esc($('strengthMemo').value||'정답 문항에서 핵심 정보와 논리 관계를 안정적으로 파악했습니다.')}</li></ul></div><div class="note growth"><h4>↗ 성장 포인트</h4><ul><li>${weak.a} 영역 ${weak.v}%</li><li>${esc($('growthMemo').value||'오답 문항의 근거 문장과 오답 선지의 차이를 다시 확인합니다.')}</li></ul></div></div></div><div class="block"><div class="block-title"><span class="bar"></span>최근 Growth Test 흐름</div><div class="history">${hist.length?hist.map((h,i)=>`<div class="hp ${i===hist.length-1?'current':''}"><div class="round">${esc(h.testCode)}</div><div class="score">${h.score}</div><div class="date">${esc(h.date)}</div></div>`).join(''):'<div class="hp"><div class="round">평가 저장 후</div><div class="score">—</div><div class="date">누적 흐름 표시</div></div>'}</div></div><div class="block"><div class="block-title"><span class="bar"></span>담당교사 종합의견</div><div class="comment"><h4>Teacher's Comment · AI Evaluation</h4><p>${teacherComment(c)}</p></div></div><div class="foot">YMS Growth Test · 문항별 정답 및 분석 데이터를 기반으로 자동 분석됩니다.</div></div>`}
-async function saveReport(){if(!CURRENT_USER){alert('로그인이 필요합니다.');return}const c=calc(),code=$('testCode').value;try{await setMeta(code,{rows:c.rows.map(r=>({area:r.area,type:r.type,diff:r.diff}))});const item={name:$('name').value.trim(),school:$('school').value.trim(),grade:$('grade').value,teacher:$('teacher').value.trim(),date:$('date').value,testCode:code,score:c.score,answers:c.rows.map(r=>r.ans),strengthMemo:$('strengthMemo').value,growthMemo:$('growthMemo').value,aiComment:$('aiComment').value.trim(),updatedBy:CURRENT_USER.uid,updatedByEmail:CURRENT_USER.email||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()};if(!item.name){alert('학생명을 입력해 주세요.');return}const id=[item.name,item.school,item.date,item.testCode].map(v=>String(v||'').trim().replace(/[\/#?]/g,'_')).join('__');await db.collection('growthReports').doc(id).set(item,{merge:true});await loadCloudData();refreshStudentPick();$('cloudStatus').textContent='저장 완료 · Firebase';render()}catch(e){console.error(e);$('cloudStatus').textContent='저장 실패';$('cloudStatus').classList.add('err');alert('저장에 실패했습니다: '+(e.message||e))}}
-function refreshStudentPick(){const rs=REPORTS_CACHE;$('studentPick').innerHTML='<option value="">— 저장된 평가 불러오기 —</option>'+rs.map((r,i)=>`<option value="${i}">${esc(r.name)} · ${esc(r.testCode)} · ${esc(r.date)}</option>`).join('')}
-function loadReport(i){const r=REPORTS_CACHE[Number(i)];if(!r)return;$('name').value=r.name;$('school').value=r.school;$('grade').value=r.grade;$('teacher').value=r.teacher;$('date').value=r.date;$('testCode').value=r.testCode;$('strengthMemo').value=r.strengthMemo||'';$('growthMemo').value=r.growthMemo||'';$('aiComment').value=r.aiComment||'';window.AI_COMMENT=r.aiComment||'';buildRows();const trs=[...document.querySelectorAll('#qbody tr')];(r.answers||[]).forEach((a,j)=>{if(trs[j]){const rev={'①':'1','②':'2','③':'3','④':'4','⑤':'5'};trs[j].querySelector('.ans').value=rev[a]||a||''}});recalc();render()}
-async function loadCloudData(){if(!CURRENT_USER)return;$('cloudStatus').textContent='Firebase 불러오는 중…';try{const[rs,ms]=await Promise.all([db.collection('growthReports').get(),db.collection('testMetadata').get()]);REPORTS_CACHE=rs.docs.map(d=>({id:d.id,...d.data()}));META_CACHE={};ms.forEach(d=>META_CACHE[d.id]=d.data());$('cloudStatus').textContent=`Firebase 연결됨 · 평가 ${REPORTS_CACHE.length}건`}catch(e){$('cloudStatus').textContent='Firestore 권한/연결 확인 필요';$('cloudStatus').classList.add('err');throw e}}
-function authMessage(e){const m={'auth/invalid-credential':'이메일 또는 비밀번호를 확인해 주세요.','auth/invalid-email':'이메일 형식을 확인해 주세요.','auth/too-many-requests':'로그인 시도가 너무 많습니다. 잠시 후 다시 시도해 주세요.','auth/user-disabled':'비활성화된 계정입니다.','auth/operation-not-allowed':'Firebase Authentication에서 익명 로그인을 사용 설정해 주세요.'};return m[e?.code]||e?.message||'로그인에 실패했습니다.'}
-let ACCESS_MODE='';
-let PIN_LOGIN_BUSY=false;
-async function enterGrowthApp(user,mode,label){CURRENT_USER=user;ACCESS_MODE=mode;$('authOverlay').classList.add('hidden');$('userChip').classList.add('on');$('userChip').textContent=label;$('logoutBtn').style.display='inline-block';$('managePinsBtn').style.display=mode==='admin'?'inline-block':'none';try{await loadCloudData();refreshStudentPick();buildRows();render()}catch(e){alert('로그인은 되었지만 Firestore 데이터를 읽지 못했습니다.')}}
-async function doTeacherPinLogin(){const pin=$('teacherPin').value.trim(),err=$('teacherPinError');err.textContent='';if(!/^\d{4}$/.test(pin)){err.textContent='핸드폰 번호 뒷자리 4자리를 입력해 주세요.';return}PIN_LOGIN_BUSY=true;try{let user=auth.currentUser;if(!user||!user.isAnonymous){if(user)await auth.signOut();const cred=await auth.signInAnonymously();user=cred.user}const doc=await db.collection('allowed_users').doc(pin).get();if(!doc.exists){sessionStorage.removeItem('ymsGrowthTeacherPin');await auth.signOut();err.textContent='승인되지 않은 번호입니다.';return}sessionStorage.setItem('ymsGrowthTeacherPin',pin);await enterGrowthApp(user,'teacher','선생님 · '+pin)}catch(e){err.textContent=authMessage(e)}finally{PIN_LOGIN_BUSY=false}}
-async function doLogin(){$('loginError').textContent='';try{const c=await auth.signInWithEmailAndPassword($('loginEmail').value.trim(),$('loginPassword').value);sessionStorage.removeItem('ymsGrowthTeacherPin');await enterGrowthApp(c.user,'admin',c.user.email||'운영자')}catch(e){$('loginError').textContent=authMessage(e)}}
-async function loadAllowedPins(){if(ACCESS_MODE!=='admin')return;const list=$('allowedPinList'),status=$('pinAdminStatus');list.innerHTML='';status.textContent='불러오는 중...';try{const snap=await db.collection('allowed_users').get();const pins=snap.docs.map(d=>d.id).filter(x=>/^\d{4}$/.test(x)).sort();status.textContent='승인번호 '+pins.length+'개';pins.forEach(pin=>{const row=document.createElement('div');row.className='pin-item';row.innerHTML='<b>'+pin+'</b><button type="button">삭제</button>';row.querySelector('button').onclick=()=>deleteAllowedPin(pin);list.appendChild(row)})}catch(e){status.textContent='목록 불러오기 실패: '+e.message}}
-async function addAllowedPin(){const pin=$('newAllowedPin').value.trim(),status=$('pinAdminStatus');if(!/^\d{4}$/.test(pin)){status.textContent='4자리 숫자를 입력해 주세요.';return}try{await db.collection('allowed_users').doc(pin).set({createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdBy:CURRENT_USER?.email||''},{merge:true});$('newAllowedPin').value='';await loadAllowedPins()}catch(e){status.textContent='추가 실패: '+e.message}}
-async function deleteAllowedPin(pin){if(!confirm(pin+' 번호의 승인을 삭제할까요?'))return;try{await db.collection('allowed_users').doc(pin).delete();await loadAllowedPins()}catch(e){$('pinAdminStatus').textContent='삭제 실패: '+e.message}}
-$('showAdminLogin').onclick=()=>{$('teacherLoginBox').style.display='none';$('adminLoginBox').style.display='block';$('loginError').textContent=''};$('backTeacherLogin').onclick=()=>{$('adminLoginBox').style.display='none';$('teacherLoginBox').style.display='block';$('teacherPinError').textContent=''};
-$('teacherPinBtn').onclick=doTeacherPinLogin;$('teacherPin').addEventListener('keydown',e=>{if(e.key==='Enter')doTeacherPinLogin()});$('loginBtn').onclick=doLogin;$('loginPassword').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
-$('managePinsBtn').onclick=()=>{$('pinAdminModal').classList.add('on');loadAllowedPins()};$('closePinAdmin').onclick=()=>$('pinAdminModal').classList.remove('on');$('addAllowedPinBtn').onclick=addAllowedPin;$('newAllowedPin').addEventListener('keydown',e=>{if(e.key==='Enter')addAllowedPin()});
-$('logoutBtn').onclick=async()=>{sessionStorage.removeItem('ymsGrowthTeacherPin');ACCESS_MODE='';await auth.signOut()};
-auth.onAuthStateChanged(async user=>{if(!user){CURRENT_USER=null;REPORTS_CACHE=[];META_CACHE={};ACCESS_MODE='';$('authOverlay').classList.remove('hidden');$('userChip').classList.remove('on');$('logoutBtn').style.display='none';$('managePinsBtn').style.display='none';$('cloudStatus').textContent='로그인 필요';return}if(PIN_LOGIN_BUSY)return;if(user.isAnonymous){const pin=sessionStorage.getItem('ymsGrowthTeacherPin');if(!pin){await auth.signOut();return}try{const doc=await db.collection('allowed_users').doc(pin).get();if(doc.exists)await enterGrowthApp(user,'teacher','선생님 · '+pin);else{sessionStorage.removeItem('ymsGrowthTeacherPin');await auth.signOut()}}catch(e){$('teacherPinError').textContent='승인 확인 실패: '+e.message}}else{await enterGrowthApp(user,'admin',user.email||'운영자')}});
-$('testCode').innerHTML=TESTS.map(x=>`<option>${x}</option>`).join('');$('date').value=today();buildRows();render();$('qcount').onchange=()=>buildRows();$('testCode').onchange=()=>{buildRows();render()};$('scoreMode').onchange=()=>{recalc();render()};['name','school','grade','date','teacher','difficultyMemo','strengthMemo','growthMemo'].forEach(id=>$(id).oninput=render);$('fill20').onclick=()=>buildRows();$('clearAnswers').onclick=()=>{document.querySelectorAll('.ans').forEach(x=>x.value='');recalc();render()};$('saveBtn').onclick=saveReport;$('studentPick').onchange=e=>{if(e.target.value!=='')loadReport(e.target.value)};$('resetBtn').onclick=()=>{if(confirm('현재 입력을 새 평가 상태로 초기화할까요?')){['name','school','teacher','strengthMemo','growthMemo','aiComment'].forEach(id=>$(id).value='');window.AI_COMMENT='';$('date').value=today();document.querySelectorAll('.ans').forEach(x=>x.value='');recalc();render()}};document.querySelectorAll('#modeSeg button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#modeSeg button').forEach(x=>x.classList.toggle('on',x===b));document.body.classList.toggle('preview',b.dataset.mode==='preview')});
+const TESTS=Object.keys(TEST_DATA),$=id=>document.getElementById(id);function esc(v){return String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]))}function today(){const d=new Date(),p=n=>String(n).padStart(2,'0');return`${d.getFullYear()}.${p(d.getMonth()+1)}.${p(d.getDate())}`}function norm(v){return({'1':'①','2':'②','3':'③','4':'④','5':'⑤','①':'①','②':'②','③':'③','④':'④','⑤':'⑤'})[String(v||'').trim()]||''}
+function buildQuestions(){const code=$('testCode').value,d=TEST_DATA[code];$('qgrid').innerHTML=d.keys.map((k,i)=>`<div class="qcard"><div class="qtop"><span class="qno">${i+1}번</span><span class="qkey">정답 ${k}</span></div><input class="ans" data-i="${i}" maxlength="1" inputmode="numeric"><div class="qres" data-r="${i}">—</div></div>`).join('');document.querySelectorAll('.ans').forEach(x=>x.oninput=()=>{if(x.value&&!/^[1-5①②③④⑤]$/.test(x.value))x.value='';recalc();render()});renderProfile();recalc();render()}
+function answers(){return[...document.querySelectorAll('.ans')].map(x=>norm(x.value))}function calc(){const d=TEST_DATA[$('testCode').value],a=answers();let correct=0,answered=0,earned=0,total=d.points.reduce((x,y)=>x+y,0),lc=0,la=0,rc=0,ra=0;d.keys.forEach((k,i)=>{if(a[i]){answered++;if(i<10)la++;else ra++;if(a[i]===k){correct++;earned+=d.points[i];if(i<10)lc++;else rc++}}});return{score:Math.round(earned/total*100),correct,answered,totalQ:d.keys.length,listenCorrect:lc,listenAnswered:la,readCorrect:rc,readAnswered:ra,answers:a}}
+function recalc(){const c=calc(),d=TEST_DATA[$('testCode').value];d.keys.forEach((k,i)=>{const el=document.querySelector(`[data-r="${i}"]`),a=c.answers[i];if(!a){el.textContent='—';el.className='qres'}else if(a===k){el.textContent='O';el.className='qres ok'}else{el.textContent='X';el.className='qres no'}});$('scoreStrip').innerHTML=[['총점',c.score+'점'],['정답',`${c.correct}/${c.totalQ}`],['듣기',`${c.listenCorrect}/10`],['독해',`${c.readCorrect}/${c.totalQ-10}`],['응답',`${c.answered}/${c.totalQ}`],['시험',$('testCode').value]].map(x=>`<div class="mini"><div class="k">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('')}
+function renderProfile(){const p=TEST_DATA[$('testCode').value].profile;$('profileBox').innerHTML=`<b>전체 난도 ${p.overall} · 독해 난도 ${p.reading}</b><br>주요 유형: ${p.types}<br>${p.summary}<br><b>평가서 반영 기준:</b> ${p.guide}`}
+function levelText(score){if(score>=90)return'E1 안정권';if(score>=80)return'E1 상위권';if(score>=70)return'E1 도달';if(score>=60)return'E1 보완 필요';return'E1 기초 재정비'}
+function render(){const c=calc(),code=$('testCode').value,p=TEST_DATA[code].profile,comment=(AI_COMMENT||'').trim()||`${$('name').value||'학생'} 학생은 ${code}에서 ${c.score}점을 기록했습니다. 이 시험은 전체 난도 ${p.overall}, 독해 난도 ${p.reading} 수준이며 ${p.types} 유형을 중심으로 구성됩니다. ${p.guide}`;$('card').innerHTML=`<div class="head"><div class="headtop"><div class="logo"><div class="mark">YMS</div><div><b>YMS Growth Test</b><small>Monthly English Achievement Assessment</small></div></div><div style="font-size:12px;color:#c6d6f1;text-align:right">MEASURE · ANALYZE · GROW</div></div><h1>영어 성장 분석 보고서</h1><p>${code} · 전체 ${p.overall} / 독해 ${p.reading}</p></div><div class="info">${[['학생명',$('name').value||'-'],['학교',$('school').value||'-'],['학년',$('grade').value],['시험코드',code],['평가일',$('date').value||'-'],['담당교사',$('teacher').value||'-']].map(x=>`<div class="info-cell"><div class="info-k">${x[0]}</div><div class="info-v">${esc(x[1])}</div></div>`).join('')}</div><div class="body"><div class="block"><div class="block-title">종합 성취도</div><div class="summary"><div class="score-hero"><div class="score-big">${c.score}<span> / 100</span></div><div class="badge">${levelText(c.score)}</div></div><div class="metrics"><div class="metric"><div class="k">듣기</div><div class="v">${c.listenCorrect}/10</div></div><div class="metric"><div class="k">독해</div><div class="v">${c.readCorrect}/${c.totalQ-10}</div></div><div class="metric"><div class="k">주요 평가유형</div><div class="v" style="font-size:13px">${p.types}</div></div><div class="metric"><div class="k">시험 난도</div><div class="v">${p.overall}</div></div></div></div></div><div class="block"><div class="block-title">시험 분석</div><div class="analysis-box"><p>${p.summary}<br><b>평가 기준:</b> ${p.guide}</p></div></div><div class="block"><div class="block-title">담당교사 종합의견</div><div class="comment"><p>${esc(comment)}</p></div></div><div class="foot">YMS Growth Test · 등록된 정답과 시험 분석 프로필을 기반으로 평가합니다.</div></div>`}
+async function loadCloud(){if(!CURRENT_USER)return;try{const snap=await db.collection('growthReports').get();REPORTS_CACHE=snap.docs.map(d=>({id:d.id,...d.data()}));$('cloudStatus').textContent=`Firebase 연결됨 · 평가 ${REPORTS_CACHE.length}건`;refreshSaved()}catch(e){$('cloudStatus').textContent='Firestore 연결 확인 필요';$('cloudStatus').classList.add('err')}}function refreshSaved(){$('studentPick').innerHTML='<option value="">— 저장된 평가 불러오기 —</option>'+REPORTS_CACHE.map((r,i)=>`<option value="${i}">${esc(r.name||'')} · ${esc(r.testCode||'')} · ${esc(r.date||'')}</option>`).join('')}
+async function saveReport(){if(!CURRENT_USER){alert('로그인이 필요합니다.');return}const c=calc(),item={name:$('name').value.trim(),school:$('school').value.trim(),grade:$('grade').value,teacher:$('teacher').value.trim(),date:$('date').value,testCode:$('testCode').value,score:c.score,answers:c.answers,aiComment:$('aiComment').value.trim(),updatedBy:CURRENT_USER.uid,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};if(!item.name){alert('학생명을 입력해 주세요.');return}const id=[item.name,item.school,item.date,item.testCode].map(v=>String(v||'').replace(/[\/#?]/g,'_')).join('__');await db.collection('growthReports').doc(id).set(item,{merge:true});await loadCloud();$('cloudStatus').textContent='저장 완료 · Firebase'}function loadReport(i){const r=REPORTS_CACHE[Number(i)];if(!r)return;['name','school','grade','teacher','date'].forEach(id=>$(id).value=r[id]||'');if(TEST_DATA[r.testCode])$('testCode').value=r.testCode;AI_COMMENT=r.aiComment||'';$('aiComment').value=AI_COMMENT;buildQuestions();document.querySelectorAll('.ans').forEach((x,j)=>{const rev={'①':'1','②':'2','③':'3','④':'4','⑤':'5'};x.value=rev[(r.answers||[])[j]]||''});recalc();render()}
+let PIN_BUSY=false;async function enter(user,label){CURRENT_USER=user;$('authOverlay').classList.add('hidden');$('logoutBtn').style.display='inline-block';$('cloudStatus').textContent=label;await loadCloud();buildQuestions()}async function teacherLogin(){const pin=$('teacherPin').value.trim();$('teacherPinError').textContent='';if(!/^\d{4}$/.test(pin)){$('teacherPinError').textContent='4자리 숫자를 입력해 주세요.';return}PIN_BUSY=true;try{let user=auth.currentUser;if(!user||!user.isAnonymous){if(user)await auth.signOut();user=(await auth.signInAnonymously()).user}const doc=await db.collection('allowed_users').doc(pin).get();if(!doc.exists){await auth.signOut();$('teacherPinError').textContent='승인되지 않은 번호입니다.';return}sessionStorage.setItem('ymsGrowthTeacherPin',pin);await enter(user,'선생님 · '+pin)}catch(e){$('teacherPinError').textContent=e.message||'로그인 실패'}finally{PIN_BUSY=false}}async function adminLogin(){try{const c=await auth.signInWithEmailAndPassword($('loginEmail').value.trim(),$('loginPassword').value);sessionStorage.removeItem('ymsGrowthTeacherPin');await enter(c.user,c.user.email||'운영자')}catch(e){$('loginError').textContent=e.message||'로그인 실패'}}
+$('teacherPinBtn').onclick=teacherLogin;$('loginBtn').onclick=adminLogin;$('showAdminLogin').onclick=()=>{$('teacherLoginBox').classList.add('hidden');$('adminLoginBox').classList.remove('hidden')};$('backTeacherLogin').onclick=()=>{$('adminLoginBox').classList.add('hidden');$('teacherLoginBox').classList.remove('hidden')};$('logoutBtn').onclick=async()=>{sessionStorage.removeItem('ymsGrowthTeacherPin');await auth.signOut()};auth.onAuthStateChanged(async user=>{if(!user){CURRENT_USER=null;$('authOverlay').classList.remove('hidden');$('logoutBtn').style.display='none';$('cloudStatus').textContent='로그인 필요';return}if(PIN_BUSY)return;if(user.isAnonymous){const pin=sessionStorage.getItem('ymsGrowthTeacherPin');if(!pin){await auth.signOut();return}const doc=await db.collection('allowed_users').doc(pin).get();if(doc.exists)await enter(user,'선생님 · '+pin);else await auth.signOut()}else await enter(user,user.email||'운영자')});
+$('testCode').innerHTML=TESTS.map(x=>`<option>${x}</option>`).join('');$('date').value=today();$('testCode').onchange=()=>{AI_COMMENT='';$('aiComment').value='';buildQuestions()};['name','school','grade','date','teacher'].forEach(id=>$(id).oninput=render);$('studentPick').onchange=e=>{if(e.target.value!=='')loadReport(e.target.value)};$('saveBtn').onclick=saveReport;$('resetBtn').onclick=()=>{if(confirm('새 평가로 초기화할까요?')){['name','school','teacher','aiComment'].forEach(id=>$(id).value='');AI_COMMENT='';$('date').value=today();buildQuestions()}};$('aiComment').oninput=()=>{AI_COMMENT=$('aiComment').value;render()};buildQuestions();
 </script>
-
 <script type="module">
-import { initializeApp as initializeModularApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app-check.js";
-import { getAI, getGenerativeModel, GoogleAIBackend } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-ai.js";
-
-const AI_LEVEL_GUIDE={
-  'M1-1':'중1 입문 독해 수준으로, 짧고 명확한 생활·학교 소재를 중심으로 핵심 내용과 직접 제시된 정보를 찾는 기본 독해 능력을 평가합니다.',
-  'M1-2':'중1 기본 독해 수준으로, 일상적 어휘와 비교적 단순한 문장 구조를 바탕으로 주제·제목·내용 일치·기초 추론을 평가합니다.',
-  'M1-3':'중1 표준 독해 수준으로, 기본 정보 파악에서 이유 추론·문맥 어휘·빈칸으로 평가 범위가 넓어지는 단계입니다.',
-  'M1-4':'중1 심화~중2 진입 수준으로, 정보량이 늘고 원인·결과 및 문맥 판단이 강화되어 단순 직독직해 이상의 이해가 필요합니다.',
-  'M1-5':'중2 표준 독해 수준으로, 중심 생각을 압축하고 상황의 의미를 추론하며 다의어의 문맥적 의미를 판단하는 능력을 평가합니다.',
-  'M1-6':'중2 심화~중3 진입 수준으로, 추상성이 높아지고 단순 정보보다 글의 논리와 근거를 파악하는 능력을 평가합니다.',
-  'M2-1':'중3 표준~심화 독해 수준으로, 문화·공정성·역사 등 추상적 소재에서 개념 간 관계와 필자의 관점을 읽는 능력을 평가합니다.',
-  'M2-2':'중3 심화 독해 수준으로, 철학·문화·사회 문제를 다루며 개념의 차이와 논리적 함의를 구별하는 능력을 평가합니다.',
-  'M2-3':'중3 최상~고1 예비 수준으로, 추상 주제가 증가하고 지문에 직접 쓰이지 않은 의미까지 종합하는 능력을 평가합니다.',
-  'M2-4':'고1 예비 독해 수준으로, 근거와 결론·공정성·자료의 선택성 등 고등 독해형 논증 구조를 본격적으로 평가합니다.',
-  'M2-5':'고1 3월 모의고사 직전 수준으로, 추상적 개념·복합 인과관계·학술적 어휘를 통해 고등학교 모의고사형 사고를 평가합니다.',
-  'M2-6':'고1 3월 모의고사 진입 수준으로, 고1 3월 전국연합에 진입하는 어휘·문장 구조·추론 능력을 평가합니다.',
-  'M3-2':'고1 3월 전국연합 수준+응용 단계로, 고1 3월 모의고사 수준에 응용·추론 요소를 강화한 평가입니다.',
-  'M3-3':'고1 6월 전국연합 수준으로, 추상적 소재와 복합 논리가 본격화된 고등 독해 능력을 평가합니다.',
-  'M3-4':'고1 6월 전국연합 중상 난도로, 변인·인과관계·논증 구조와 순서·삽입 등 논리적 독해 부담이 강화된 평가입니다.',
-  'M3-5':'고1 6월 전국연합 실전 상 난도로, 지문 길이와 추상성이 높고 논리 추론과 문맥 판단에서 높은 정확성을 요구합니다.',
-  'M3-6':'고1 6월 전국연합 종합 실전 최상 난도로, 복합 추론·논리 구조·고급 어휘를 종합적으로 평가합니다.',
-  'H1-1':'고2 전국연합 수준으로, 높은 수준의 어휘와 추상적 소재, 복합 문장 및 논증 관계를 종합적으로 처리하는 능력을 평가합니다.'
-};
-
-let aiModelPromise=null;
-async function getYmsAiModel(){
-  if(!aiModelPromise){
-    aiModelPromise=(async()=>{
-      const app=initializeModularApp(firebaseConfig,'yms-ai-evaluation');
-      initializeAppCheck(app,{
-        provider:new ReCaptchaEnterpriseProvider('6Ldq4YgtAAAAALQVJCU0XqmKGBR-cedGh77SBCEC'),
-        isTokenAutoRefreshEnabled:true
-      });
-      const ai=getAI(app,{backend:new GoogleAIBackend()});
-      return getGenerativeModel(ai,{
-        model:'gemini-3.5-flash-lite',
-        systemInstruction:`당신은 YMS Growth Test의 영어 교육 평가서를 작성하는 전문 교사입니다. 학부모에게 전달할 담당교사 Comment를 한국어로 작성하세요. 제공된 데이터에 없는 사실은 절대 만들지 마세요. 점수와 영역별 성취도를 정확히 반영하고, 학생을 단정적으로 낙인찍지 마세요. 반드시 1) 이번 시험의 객관적인 난이도 설명, 2) 현재 성취와 강점, 3) 보완이 필요한 영역과 근거, 4) 다음 학습 방향을 자연스럽게 하나의 코멘트로 연결하세요. 과장된 칭찬이나 불필요한 수식은 피하고, 학부모가 이해하기 쉬운 전문적인 문체를 사용하세요. 5~7문장, 약 350~550자 내외로 작성하고 제목·불릿·마크다운 없이 본문만 출력하세요.`
-      });
-    })();
-  }
-  return aiModelPromise;
-}
-
-function currentAiData(){
-  const c=calc(), code=$('testCode').value, rows=c.rows||[];
-  const wrong=rows.filter(r=>r.ans&&r.key&&r.ans!==r.key).map(r=>({문항:r.n,영역:r.area,유형:r.type}));
-  const area=AREAS.map(a=>({영역:a,정답:c.byArea[a]?.correct||0,문항:c.byArea[a]?.total||0,성취도:c.areaPct[a]||0}));
-  const name=$('name').value.trim();
-  const history=(REPORTS_CACHE||[]).filter(r=>r.name===name&&r.testCode!==code).slice(-3).map(r=>({시험:r.testCode,점수:r.score,평가일:r.date}));
-  return {
-    학생명:name||'학생', 학교:$('school').value.trim(), 학년:$('grade').value, 시험코드:code,
-    시험수준:AI_LEVEL_GUIDE[code]||'해당 회차 기준 난이도', 점수:c.score, 정답수:c.correct, 전체문항:c.totalQuestions, 응답문항:c.answered,
-    영역별성취도:area, 오답정보:wrong, 이전평가:history,
-    선생님강점메모:$('strengthMemo').value.trim(), 선생님보완메모:$('growthMemo').value.trim()
-  };
-}
-
-function applyAiCommentToReport(){
-  const text=(window.AI_COMMENT||'').trim();
-  if(!text)return;
-  const p=document.querySelector('#card .comment p');
-  if(p && p.textContent!==text)p.textContent=text;
-}
-function renderRecentTests(){
-  const list=document.getElementById('recentTestsList');
-  if(!list)return;
-  const name=$('name').value.trim();
-  if(!name){list.innerHTML='<div class="recent-empty">학생명을 입력하면 최근 평가가 표시됩니다.</div>';return;}
-  const rows=(REPORTS_CACHE||[])
-    .filter(r=>String(r.name||'').trim()===name)
-    .sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))
-    .slice(0,4);
-  if(!rows.length){list.innerHTML='<div class="recent-empty">저장된 평가가 없습니다.</div>';return;}
-  list.innerHTML=rows.map(r=>`<div class="recent-test-item"><div class="recent-test-top"><span class="recent-test-code">${esc(r.testCode||'-')}</span><span class="recent-test-score">${Number(r.score)||0}점</span></div><div class="recent-test-date">${esc(r.date||'-')}</div></div>`).join('');
-}
-window.renderRecentTests=renderRecentTests;
-const card=document.getElementById('card');
-if(card)new MutationObserver(()=>{applyAiCommentToReport();renderRecentTests();}).observe(card,{childList:true,subtree:true});
-
-const btn=document.getElementById('generateAiComment');
-if(btn) btn.addEventListener('click',async()=>{
-  const status=document.getElementById('aiStatus'), out=document.getElementById('aiComment'), data=currentAiData();
-  if(!data.학생명||data.학생명==='학생'){status.textContent='학생명을 먼저 입력해 주세요.';status.className='hint ai-status-error';return;}
-  if(data.응답문항===0){status.textContent='학생 답을 먼저 입력해 주세요.';status.className='hint ai-status-error';return;}
-  btn.disabled=true; btn.textContent='AI 평가서 작성 중…'; status.textContent='시험 결과와 4대 독해 영역을 분석하고 있습니다.'; status.className='hint';
-  try{
-    const model=await getYmsAiModel();
-    const prompt=`다음 YMS Growth Test 결과만을 근거로 담당교사 Comment를 작성하세요.
-
-${JSON.stringify(data,null,2)}
-
-오답 문항이 아직 미응답인 경우에는 오답으로 해석하지 마세요. 이전 평가가 있으면 변화 추이를 과장 없이 한 문장 이내에서 언급할 수 있습니다. 시험 수준 설명은 제공된 문구의 의미를 바꾸지 마세요.`;
-    const result=await model.generateContent(prompt);
-    const text=(result.response.text()||'').trim();
-    if(!text)throw new Error('AI 응답이 비어 있습니다.');
-    window.AI_COMMENT=text; out.value=text; applyAiCommentToReport();
-    status.textContent='AI 평가서 생성 완료 · 필요한 경우 문장을 직접 수정할 수 있습니다.'; status.className='hint ai-status-ok';
-  }catch(e){
-    console.error(e);
-    const msg=String(e?.message||e);
-    status.textContent='AI 평가서 생성 실패: '+msg; status.className='hint ai-status-error';
-  }finally{
-    btn.disabled=false; btn.textContent='✨ AI 평가서 다시 만들기';
-  }
-});
-const aiTextarea=document.getElementById('aiComment');
-if(aiTextarea) aiTextarea.addEventListener('input',()=>{window.AI_COMMENT=aiTextarea.value;applyAiCommentToReport();});
+import{initializeApp as initializeModularApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";import{initializeAppCheck,ReCaptchaEnterpriseProvider}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app-check.js";import{getAI,getGenerativeModel,GoogleAIBackend}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-ai.js";let aiModelPromise=null;async function getModel(){if(!aiModelPromise)aiModelPromise=(async()=>{const app=initializeModularApp(firebaseConfig,'yms-ai-e1');initializeAppCheck(app,{provider:new ReCaptchaEnterpriseProvider('6Ldq4YgtAAAAALQVJCU0XqmKGBR-cedGh77SBCEC'),isTokenAutoRefreshEnabled:true});return getGenerativeModel(getAI(app,{backend:new GoogleAIBackend()}),{model:'gemini-3.5-flash-lite',systemInstruction:`당신은 YMS Growth Test의 영어 교육 평가서를 작성하는 전문 교사입니다. 제공된 시험 프로필과 실제 학생 정답 데이터만 사용하세요. 제공되지 않은 문항별 유형이나 학생 특성을 만들어내지 마세요. 시험의 객관적 난이도, 듣기와 독해 성취, 현재 강점, 보완 방향을 학부모가 이해하기 쉬운 한국어 5~7문장으로 작성하세요. 과장된 칭찬과 낙인 표현은 피하고 제목이나 불릿 없이 본문만 출력하세요.`})})();return aiModelPromise}
+document.getElementById('generateAiComment').onclick=async()=>{const status=document.getElementById('aiStatus'),out=document.getElementById('aiComment'),c=calc(),code=document.getElementById('testCode').value,p=TEST_DATA[code].profile;if(!document.getElementById('name').value.trim()){status.textContent='학생명을 먼저 입력해 주세요.';return}if(c.answered===0){status.textContent='학생 답을 먼저 입력해 주세요.';return}status.textContent='AI 평가서 작성 중…';try{const model=await getModel();const data={학생명:document.getElementById('name').value.trim(),학년:document.getElementById('grade').value,시험코드:code,총점:c.score,정답수:c.correct,전체문항:c.totalQ,듣기:{정답:c.listenCorrect,전체:10},독해:{정답:c.readCorrect,전체:c.totalQ-10},시험분석:{전체난도:p.overall,독해난도:p.reading,주요유형:p.types,성격:p.summary,평가서반영기준:p.guide},오답문항:c.answers.map((a,i)=>a&&a!==TEST_DATA[code].keys[i]?i+1:null).filter(Boolean)};const r=await model.generateContent(`다음 데이터만 근거로 담당교사 Comment를 작성하세요. 문항별 유형은 제공되지 않았으므로 오답 번호만 보고 유형을 추정하지 마세요.\n\n${JSON.stringify(data,null,2)}`);AI_COMMENT=(r.response.text()||'').trim();out.value=AI_COMMENT;render();status.textContent='AI 평가서 생성 완료'}catch(e){status.textContent='AI 평가서 생성 실패: '+(e.message||e)}};
 </script>
-\n
 </body>
 </html>
